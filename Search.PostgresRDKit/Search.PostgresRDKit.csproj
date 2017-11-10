@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Npgsql" Version="3.2.5" />
   </ItemGroup>
 
@@ -13,9 +12,5 @@
     <ProjectReference Include="..\Search.Similarity.Abstractions\Search.Similarity.Abstractions.csproj" />
     <ProjectReference Include="..\Search.Substructure.Abstractions\Search.Substructure.Abstractions.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TrimUnusedDependencies>true</TrimUnusedDependencies>
-  </PropertyGroup>
 
 </Project>
