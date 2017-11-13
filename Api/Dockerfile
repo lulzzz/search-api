@@ -2,6 +2,7 @@ FROM microsoft/dotnet:sdk AS build-env
 
 ENV http_proxy='http://10.3.80.80:3128'
 ENV https_proxy='http://10.3.80.80:3128'
+ENV no_proxy='search_rdkit-postgres_1'
 
 COPY . ~/api
 
