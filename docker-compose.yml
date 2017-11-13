@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  search-api:
+    image: search-api
+    build:
+      context: ./Api
+      dockerfile: Dockerfile
+    links:
+    - rdkit-postgres
+    ports:
+    - "5000:80"
+    environment:
+    - ASPNETCORE_URLS=http://+:80
+  rdkit-postgres:
+    image: rdkit-postgres
+    build:
+      context: ./Docker.rdkit
+      dockerfile: dockerfile

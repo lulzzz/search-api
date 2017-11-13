@@ -1,0 +1,49 @@
+FROM postgres:9.6
+
+ENV http_proxy='http://10.3.80.80:3128'
+ENV https_proxy='http://10.3.80.80:3128'
+
+RUN apt-get update
+
+RUN apt-get install -y \
+    build-essential \
+    cmake \
+    sqlite3 \
+    libsqlite3-dev \
+    libboost-dev \
+    libboost-system-dev \
+    libboost-thread-dev \
+    libboost-serialization-dev \
+    libboost-regex-dev \
+    postgresql-server-dev-9.6 \
+    git
+
+ENV RDBASE=/rdkit
+
+RUN mkdir $RDBASE
+WORKDIR $RDBASE
+RUN git init && git remote add origin https://github.com/rdkit/rdkit.git
+RUN git fetch --no-tags origin tag Release_2017_09_1 && git checkout Release_2017_09_1
+
+ENV LD_LIBRARY_PATH=$RDBASE/lib:/usr/lib/x86_64-linux-gnu
+
+RUN mkdir $RDBASE/build
+WORKDIR $RDBASE/build
+
+RUN cmake \
+    -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
+    -DRDK_BUILD_CPP_TESTS=OFF \
+    -DRDK_TEST_MMFF_COMPLIANCE=OFF \
+    -DRDK_BUILD_PGSQL=ON \
+    -DRDK_TEST_MULTITHREADED=OFF \
+    -DPostgreSQL_TYPE_INCLUDE_DIR=/usr/include/postgresql/9.6/server/ \
+    -DPostgreSQL_ROOT=/usr/lib/postgresql/9.6 \
+    ..
+
+RUN make
+RUN make install
+
+RUN sh Code/PgSQL/rdkit/pgsql_install.sh
+
+WORKDIR $RDBASE
+USER postgres

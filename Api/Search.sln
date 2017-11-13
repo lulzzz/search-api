@@ -5,11 +5,16 @@ VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search", "Search\Search.csproj", "{FFA8A6E3-F51D-428C-9863-EBBBC87C8264}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Similarity.Abstractions", "Search.Similarity.Abstractions\Search.Similarity.Abstractions.csproj", "{F280FDDA-8B69-418F-8699-9BDF4E5F133A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Similarity.Abstractions", "Search.Similarity.Abstractions\Search.Similarity.Abstractions.csproj", "{F280FDDA-8B69-418F-8699-9BDF4E5F133A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Substructure.Abstractions", "Search.Substructure.Abstractions\Search.Substructure.Abstractions.csproj", "{13BE332F-22D4-4038-84AF-BBE02A549025}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Substructure.Abstractions", "Search.Substructure.Abstractions\Search.Substructure.Abstractions.csproj", "{13BE332F-22D4-4038-84AF-BBE02A549025}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.PostgresRDKit", "Search.PostgresRDKit\Search.PostgresRDKit.csproj", "{83B7FCB4-A6F3-4D6E-B543-3BAA0BC02051}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.PostgresRDKit", "Search.PostgresRDKit\Search.PostgresRDKit.csproj", "{83B7FCB4-A6F3-4D6E-B543-3BAA0BC02051}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D0E8109B-663D-4CA8-B3C3-AB5A2DC6DE4B}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,6 @@
 ﻿namespace Search
 {
-    public class SearchRequest
+    public class MoleculeData
     {
     }
 }
