@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Search.PostgresRDKit\Search.PostgresRDKit.csproj" />
     <ProjectReference Include="..\Search.Similarity.Abstractions\Search.Similarity.Abstractions.csproj" />
     <ProjectReference Include="..\Search.Substructure.Abstractions\Search.Substructure.Abstractions.csproj" />
   </ItemGroup>

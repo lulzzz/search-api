@@ -16,7 +16,11 @@ namespace Search
     public class SearchRequest
     {
         public string Smiles { get; set; }
-        public string Name { get; set; }
+        public SearchType SearchType { get; set; }
+
+        public string ExactName { get; set; }
+        public string ExactSmiles { get; set; }
+
         public ComparisonDescriptor<double> Mw { get; set; }
         public ComparisonDescriptor<double> Logp { get; set; }
         public ComparisonDescriptor<int> Hba { get; set; }
@@ -25,5 +29,13 @@ namespace Search
         public ComparisonDescriptor<double> Tpsa { get; set; }
         public ComparisonDescriptor<double> Fsp3 { get; set; }
         public ComparisonDescriptor<int> Hac { get; set; }
+    }
+
+    public enum SearchType
+    {
+        Exact,
+        Substructure,
+        Similar,
+        Superstructure
     }
 }
