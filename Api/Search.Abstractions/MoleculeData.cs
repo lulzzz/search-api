@@ -1,9 +1,9 @@
-﻿namespace Search
+﻿namespace Search.Abstractions
 {
     public class MoleculeData
     {
         public string Smiles { get; set; }
-        public string Idnumber { get; set; }
+        public string IdNumber { get; set; }
         public string Name { get; set; }
         public double Mw { get; set; }
         public double Logp { get; set; }

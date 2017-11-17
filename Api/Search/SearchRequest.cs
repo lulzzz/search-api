@@ -1,41 +1,30 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using Microsoft.AspNetCore.Mvc;
+using Search.Abstractions;
+using System.ComponentModel.DataAnnotations;
 
 namespace Search
 {
-    public enum CompareType { Eq, Gt, Lt }
+    //public class ComparisonDescriptor<T>
+    //{
+    //    public enum Operator { Eq, Gt, Lt }
 
-    public class ComparisonDescriptor<T>
-    {
-        public T Value { get; set; }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public CompareType CompareType { get; set; }
-    }
+    //    public T Value { get; set; }
+        
+    //    public Operator Type { get; set; }
+    //}
 
     public class SearchRequest
     {
-        public string Smiles { get; set; }
-        public SearchType SearchType { get; set; }
+        [FromQuery, Required]
+        public string Text { get; set; }
 
-        public string ExactName { get; set; }
-        public string ExactSmiles { get; set; }
+        [FromQuery]
+        public SearchType Type { get; set; } = SearchType.Smart;
 
-        public ComparisonDescriptor<double> Mw { get; set; }
-        public ComparisonDescriptor<double> Logp { get; set; }
-        public ComparisonDescriptor<int> Hba { get; set; }
-        public ComparisonDescriptor<int> Hbd { get; set; }
-        public ComparisonDescriptor<int> Rotb { get; set; }
-        public ComparisonDescriptor<double> Tpsa { get; set; }
-        public ComparisonDescriptor<double> Fsp3 { get; set; }
-        public ComparisonDescriptor<int> Hac { get; set; }
-    }
+        [FromQuery]
+        public int? PageSize { get; set; } = 12;
 
-    public enum SearchType
-    {
-        Exact,
-        Substructure,
-        Similar,
-        Superstructure
+        [FromQuery]
+        public int? PageNumber { get; set; } = 1;
     }
 }

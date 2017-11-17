@@ -6,14 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="Npgsql" Version="3.2.5" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Search.PostgresRDKit\Search.PostgresRDKit.csproj" />
-    <ProjectReference Include="..\Search.Similarity.Abstractions\Search.Similarity.Abstractions.csproj" />
-    <ProjectReference Include="..\Search.Substructure.Abstractions\Search.Substructure.Abstractions.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
