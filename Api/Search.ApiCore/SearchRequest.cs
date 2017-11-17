@@ -2,7 +2,7 @@
 using Search.Abstractions;
 using System.ComponentModel.DataAnnotations;
 
-namespace Search
+namespace Search.ApiCore
 {
     //public class ComparisonDescriptor<T>
     //{
@@ -15,6 +15,9 @@ namespace Search
 
     public class SearchRequest
     {
+        /// <summary>
+        /// Search text that is SMILES for all search types except '<see cref="SearchType.Smart"/>'
+        /// </summary>
         [FromQuery, Required]
         public string Text { get; set; }
 

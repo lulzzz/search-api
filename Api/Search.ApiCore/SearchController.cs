@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 using Search.Abstractions;
-using Search.PostgresRDKit.Tables;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Search
+namespace Search.ApiCore
 {
     [Controller]
     [Route("molecules")]
@@ -24,7 +19,8 @@ namespace Search
         [Route("search")]
         public SearchResult Search(SearchRequest request)
         {
-            var mols = _searchProvider.Find(new SearchQuery { SearchText = request.Text, Type = request.Type }, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value)
+            var mols = _searchProvider
+                .Find(new SearchQuery { SearchText = request.Text, Type = request.Type }, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value)
                 .ToArray();
 
             return new SearchResult { Molecules = mols };

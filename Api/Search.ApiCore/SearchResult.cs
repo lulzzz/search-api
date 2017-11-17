@@ -1,7 +1,7 @@
 ﻿using Search.Abstractions;
 using System.Collections.Generic;
 
-namespace Search
+namespace Search.ApiCore
 {
     public class SearchResult
     {
