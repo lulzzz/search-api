@@ -3,7 +3,7 @@ using Search.PostgresRDKit;
 using Search.ApiCore;
 using System;
 
-namespace Search
+namespace Search.RDKit.Api
 {
     public class Program
     {
@@ -18,7 +18,7 @@ namespace Search
 
             var searchProvider = new PostgresRDKitSearchProvider(postgresConnectionString);
 
-            Api.BuildHost(args, searchProvider).Run();
+            ApiCore.Api.BuildHost(args, searchProvider).Run();
             return 0;
         }
     }
