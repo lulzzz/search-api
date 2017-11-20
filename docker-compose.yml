@@ -1,11 +1,11 @@
 version: '3'
 
 services:
-  search-api:
+  rdkit-search-api:
     image: search-api
     build:
       context: ./Api
-      dockerfile: Dockerfile
+      dockerfile: RDKit/Dockerfile
     ports:
     - "5000:5000"
     environment:

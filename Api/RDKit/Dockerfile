@@ -9,16 +9,14 @@ COPY . ~/api
 
 WORKDIR ~/api
 
-RUN dotnet restore ./Search/Search.ApiRDKit.csproj && dotnet publish ./Search/Search.ApiRDKit.csproj -c Release -o /out
+RUN dotnet restore ./RDKit/Search.RDKit.Api/Search.RDKit.Api.csproj && dotnet publish ./RDKit/Search.RDKit.Api/Search.RDKit.Api.csproj -c Release -o /out
 
 
 FROM microsoft/aspnetcore:2.0.3
-
-EXPOSE 80
 
 WORKDIR /app
 
 COPY --from=build-env /out ./
 
-ENTRYPOINT ["dotnet", "Search.ApiRDKit.dll"]
+ENTRYPOINT ["dotnet", "Search.RDKit.Api.dll"]
 
