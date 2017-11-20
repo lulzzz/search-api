@@ -8,21 +8,14 @@
     }
   },
   "profiles": {
-    "IIS Express": {
+    "Local": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "launchUrl": "/swagger",
       "environmentVariables": {
+        "postgres_connection": "User ID=postgres;Host=localhost;Port=5432;Database=simsearch;Pooling=true;",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "Search": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:56019/"
     }
   }
 }

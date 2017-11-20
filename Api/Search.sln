@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search", "Search\Search.csproj", "{FFA8A6E3-F51D-428C-9863-EBBBC87C8264}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.ApiRDKit", "Search\Search.ApiRDKit.csproj", "{FFA8A6E3-F51D-428C-9863-EBBBC87C8264}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.PostgresRDKit", "Search.PostgresRDKit\Search.PostgresRDKit.csproj", "{83B7FCB4-A6F3-4D6E-B543-3BAA0BC02051}"
 EndProject
@@ -15,6 +15,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Abstractions", "Search.Abstractions\Search.Abstractions.csproj", "{FD7628D7-762B-4DD8-B8B1-5D8A6025E842}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.ApiCore", "Search.ApiCore\Search.ApiCore.csproj", "{72A35D18-4872-43C5-AA85-B5E22A434ED6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RDKit", "RDKit", "{D95539B9-C98A-4580-8D96-CF2A338C17BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Daylight", "Daylight", "{34AFEB26-1F57-44C9-BD03-F6018AFA7762}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FFA8A6E3-F51D-428C-9863-EBBBC87C8264} = {D95539B9-C98A-4580-8D96-CF2A338C17BF}
+		{83B7FCB4-A6F3-4D6E-B543-3BAA0BC02051} = {D95539B9-C98A-4580-8D96-CF2A338C17BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24E59C44-E41A-4321-A1EB-5E1075454D85}

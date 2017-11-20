@@ -1,23 +1,25 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Search.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
 using Search.PostgresRDKit;
 using Search.ApiCore;
+using System;
 
 namespace Search
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            BuildWebHost(args, new PostgresRDKitSearchProvider("User ID=postgres;Host=rdkit-postgres;Port=5432;Database=simsearch;Pooling=true;")).Run();
-        }
+            var postgresConnectionString = Environment.GetEnvironmentVariable("postgres_connection");
+            if (string.IsNullOrEmpty(postgresConnectionString))
+            {
+                Console.WriteLine("Connection string to PostgreSQL instance must be passed as environment variable 'postgres_connection'");
+                return 1;
+            }
 
-        public static IWebHost BuildWebHost(string[] args, ISearchProvider searchProvider) =>
-            WebHost.CreateDefaultBuilder(args)
-                .ConfigureServices(sc => sc.Add(new ServiceDescriptor(typeof(ISearchProvider), searchProvider)))
-                .UseStartup<Startup>()
-                .Build();
+            var searchProvider = new PostgresRDKitSearchProvider(postgresConnectionString);
+
+            Api.BuildHost(args, searchProvider).Run();
+            return 0;
+        }
     }
 }
