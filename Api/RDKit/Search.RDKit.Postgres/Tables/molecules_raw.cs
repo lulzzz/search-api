@@ -1,4 +1,6 @@
-﻿namespace Search.PostgresRDKit.Tables
+﻿#pragma warning disable IDE1006 // Naming Styles
+
+namespace Search.PostgresRDKit.Tables
 {
     public class molecules_raw
     {
@@ -16,3 +18,5 @@
         public int hac { get; set; }
     }
 }
+
+#pragma warning restore IDE1006 // Naming Styles

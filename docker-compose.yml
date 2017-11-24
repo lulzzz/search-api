@@ -5,7 +5,7 @@ services:
     image: search-api
     build:
       context: ./Api
-      dockerfile: RDKit/Dockerfile
+      dockerfile: ./RDKit/Dockerfile
     ports:
     - "5000:5000"
     environment:
@@ -21,3 +21,23 @@ services:
     ports:
     - "5432:5432"
     # network_mode: "host"
+  java-oplusd:
+    image: java-oplusd
+    container_name: java-oplusd
+    build:
+      context: ./JavaOPlusD
+      dockerfile: dockerfile
+    # ports:
+    # - "8080:8080"
+    environment:
+    - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
+  oplusd-search-api:
+    image: oplusd-search-api
+    build:
+      context: ./Api
+      dockerfile: ./JavaOPlusD/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_URLS=http://+:5001
+      - java_oplusd_url=http://java-oplusd:8080

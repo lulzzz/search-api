@@ -12,18 +12,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RDKit", "RDKit", "{D95539B9
 		RDKit\Dockerfile = RDKit\Dockerfile
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Daylight", "Daylight", "{34AFEB26-1F57-44C9-BD03-F6018AFA7762}"
-	ProjectSection(SolutionItems) = preProject
-		Daylight\Dockerfile = Daylight\Dockerfile
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.RDKit.Postgres", "RDKit\Search.RDKit.Postgres\Search.RDKit.Postgres.csproj", "{C1C58EBC-C696-4E32-99AC-617723885D03}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.RDKit.Api", "RDKit\Search.RDKit.Api\Search.RDKit.Api.csproj", "{BCD5FC1F-E6E9-4F70-BC09-1475C48B47D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Daylight.Oracle", "Daylight\Search.Daylight.Oracle\Search.Daylight.Oracle.csproj", "{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JavaOPlusD", "JavaOPlusD", "{4398D5CC-C7E8-4268-8026-58EA61C79DC7}"
+	ProjectSection(SolutionItems) = preProject
+		JavaOPlusD\Dockerfile = JavaOPlusD\Dockerfile
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Daylight.Api", "Daylight\Search.Daylight.Api\Search.Daylight.Api.csproj", "{5C80BDAE-25C3-4542-8E50-2B9444819EE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.JavaOPlusD.Api", "JavaOPlusD\Search.JavaOPlusD.Api\Search.JavaOPlusD.Api.csproj", "{C5F045A9-DAFB-4396-8A1A-73B9E00146AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,14 +45,10 @@ Global
 		{BCD5FC1F-E6E9-4F70-BC09-1475C48B47D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCD5FC1F-E6E9-4F70-BC09-1475C48B47D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCD5FC1F-E6E9-4F70-BC09-1475C48B47D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C80BDAE-25C3-4542-8E50-2B9444819EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C80BDAE-25C3-4542-8E50-2B9444819EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C80BDAE-25C3-4542-8E50-2B9444819EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C80BDAE-25C3-4542-8E50-2B9444819EE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5F045A9-DAFB-4396-8A1A-73B9E00146AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5F045A9-DAFB-4396-8A1A-73B9E00146AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5F045A9-DAFB-4396-8A1A-73B9E00146AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5F045A9-DAFB-4396-8A1A-73B9E00146AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,8 +56,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C1C58EBC-C696-4E32-99AC-617723885D03} = {D95539B9-C98A-4580-8D96-CF2A338C17BF}
 		{BCD5FC1F-E6E9-4F70-BC09-1475C48B47D7} = {D95539B9-C98A-4580-8D96-CF2A338C17BF}
-		{5F0FDC0D-85EF-440B-A692-5EF6C1CB8EDC} = {34AFEB26-1F57-44C9-BD03-F6018AFA7762}
-		{5C80BDAE-25C3-4542-8E50-2B9444819EE8} = {34AFEB26-1F57-44C9-BD03-F6018AFA7762}
+		{C5F045A9-DAFB-4396-8A1A-73B9E00146AA} = {4398D5CC-C7E8-4268-8026-58EA61C79DC7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24E59C44-E41A-4321-A1EB-5E1075454D85}

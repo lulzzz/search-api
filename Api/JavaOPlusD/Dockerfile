@@ -9,7 +9,7 @@ COPY . ~/api
 
 WORKDIR ~/api
 
-RUN dotnet restore ./Daylight/Search.Daylight.Api/Search.Daylight.Api.csproj && dotnet publish ./RDKit/Search.Daylight.Api/Search.Daylight.Api.csproj -c Release -o /out
+RUN dotnet restore ./JavaOPlusD/Search.JavaOPlusD.Api/Search.JavaOPlusD.Api.csproj && dotnet publish ./JavaOPlusD/Search.JavaOPlusD.Api/Search.JavaOPlusD.Api.csproj -c Release -o /out
 
 
 FROM microsoft/aspnetcore:2.0.3
@@ -18,5 +18,5 @@ WORKDIR /app
 
 COPY --from=build-env /out ./
 
-ENTRYPOINT ["dotnet", "Search.Daylight.Api.dll"]
+ENTRYPOINT ["dotnet", "Search.JavaOPlusD.Api.dll"]
 
