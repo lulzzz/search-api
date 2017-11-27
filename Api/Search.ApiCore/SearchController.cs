@@ -20,7 +20,7 @@ namespace Search.ApiCore
         public SearchResult Search(SearchRequest request)
         {
             var mols = _searchProvider
-                .Find(new SearchQuery { SearchText = request.Text, Type = request.Type }, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value)
+                .Find(new SearchQuery { SearchText = request.Text, Type = request.Type }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value)
                 .ToArray();
 
             return new SearchResult { Molecules = mols };

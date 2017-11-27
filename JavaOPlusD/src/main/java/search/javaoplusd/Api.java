@@ -46,7 +46,7 @@ public class Api
 			System.exit(-1);
 		}
 
-		_db = new Db(args[0]);
+		_db = new Db(con);
 
 		new SpringApplicationBuilder(Api.class).run(args);
 	}

@@ -14,14 +14,14 @@ namespace Search.JavaOPlusD.Api
     {
         public static int Main(string[] args)
         {
-            var postgresConnectionString = Environment.GetEnvironmentVariable("java_oplusd_url");
-            if (string.IsNullOrEmpty(postgresConnectionString))
+            var componentUrl = Environment.GetEnvironmentVariable("java_oplusd_url");
+            if (string.IsNullOrEmpty(componentUrl))
             {
-                Console.WriteLine("Connection string to PostgreSQL instance must be passed as environment variable 'postgres_connection'");
+                Console.WriteLine("Connection string to OPlusD instance must be passed as environment variable 'postgres_connection'");
                 return 1;
             }
 
-            using (var searchProvider = new JavaOPlusDSearchProvider(postgresConnectionString))
+            using (var searchProvider = new JavaOPlusDSearchProvider(componentUrl))
             { 
                 ApiCore.Api.BuildHost(args, searchProvider).Run();
             }

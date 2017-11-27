@@ -7,6 +7,6 @@ namespace Search.Abstractions
     public interface ISearchProvider
     {
         MoleculeData Item(string id);
-        IEnumerable<MoleculeData> Find(SearchQuery searchQuery, int skip, int take);
+        IEnumerable<MoleculeData> Find(SearchQuery searchQuery, FilterQuery filters, int skip, int take);
     }
 }

@@ -29,7 +29,7 @@ public class Db {
 		return DriverManager.getConnection(_connectionString, connectionProps);
 	}
 
-	private static final String SELECT_QUERY = "SELECT * FROM (select id, smiles, prop_inchikey as idnumber, prop_name as name, mw, prop_logp as logp, h_acc as hba, h_don as hbd, rotbonds as rotb, psa as tpsa, fsp3, effha as hac FROM TABLE(search.get_structuresc_array)) WHERE ROWNUM > %1$d AND ROWNUM <= %2$d";
+	private static final String SELECT_QUERY = "SELECT * FROM (select id, smiles, csc as idnumber, prop_name as name, mw, prop_logp as logp, h_acc as hba, h_don as hbd, rotbonds as rotb, psa as tpsa, fsp3, effha as hac FROM TABLE(search.get_structuresc_array)) WHERE ROWNUM > %1$d AND ROWNUM <= %2$d";
 
     private List<DbMolecule> findInOracle(String sp, String smiles, String filter, int from, int to) throws SQLException {
 		List<DbMolecule> results = new ArrayList<DbMolecule>();
@@ -87,3 +87,19 @@ public class Db {
 	}
 
 }
+
+// call search.exact_search('O=C1CNC(=O)N1', 0); -- BB - 0, SC - 1
+
+// call search.substructure_search('NC(=O)c1cnn[nH]1', 0, 1000)
+// call search.similarity_search('NC(=O)c1cnn[nH]1', 0)
+
+// call search.identifier_search('BBV-45051060')
+// call search.cdid_search(10)
+
+// select * from table(search.get_cdid_array())
+
+// select * from table(search.get_structurebb_array)
+// select * from table(search.get_structuresc_array)
+
+// select * from table(search.get_itembb_array()) item join table(search.get_structurebb_array) structure on item.id
+// select * from table(search.get_itemsc_array())

@@ -13,7 +13,7 @@
       "launchBrowser": true,
       "launchUrl": "/swagger",
       "environmentVariables": {
-        "component_url": "http://localhost:8080",
+        "java_oplusd_url": "http://localhost:8080",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },

@@ -52,7 +52,8 @@ namespace Search.PostgresRDKit
             }
         }
 
-        public IEnumerable<MoleculeData> Find(SearchQuery query, int skip, int take)
+#warning filters are not supported for now
+        public IEnumerable<MoleculeData> Find(SearchQuery query, FilterQuery filters, int skip, int take)
         {
             using (var con = new NpgsqlConnection(_connectionString))
             {

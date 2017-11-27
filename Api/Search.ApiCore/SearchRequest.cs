@@ -29,5 +29,8 @@ namespace Search.ApiCore
 
         [FromQuery]
         public int? PageNumber { get; set; } = 1;
+
+        [FromBody]
+        public FilterQuery Filters { get; set; }
     }
 }

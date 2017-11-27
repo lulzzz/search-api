@@ -24,8 +24,9 @@ namespace Search.JavaOPlusD.Api
                 _httpClient.Dispose();
             }
         }
-
-        public IEnumerable<MoleculeData> Find(SearchQuery searchQuery, int skip, int take)
+        
+#warning filters are not supported for now
+        public IEnumerable<MoleculeData> Find(SearchQuery searchQuery, FilterQuery filters, int skip, int take)
         {
             string endpoint;
             switch (searchQuery.Type)

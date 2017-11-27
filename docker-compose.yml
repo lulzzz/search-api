@@ -27,10 +27,10 @@ services:
     build:
       context: ./JavaOPlusD
       dockerfile: dockerfile
-    # ports:
-    # - "8080:8080"
+    ports:
+      - "8080:8080"
     environment:
-    - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
+      - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
   oplusd-search-api:
     image: oplusd-search-api
     build:
