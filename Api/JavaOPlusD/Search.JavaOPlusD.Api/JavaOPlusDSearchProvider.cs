@@ -26,8 +26,119 @@ namespace Search.JavaOPlusD.Api
                 _httpClient.Dispose();
             }
         }
+
+#warning should be reflection
+        static string BuildFilters(FilterQuery filters)
+        {
+            var conditions = new List<string>(8);
+
+            if (filters.Mw.HasValue)
+            {
+                var val = filters.Mw.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"mw>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"mw<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Logp.HasValue)
+            {
+                var val = filters.Logp.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"logp>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"logp<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Hba.HasValue)
+            {
+                var val = filters.Hba.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"hba>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"hba<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Hbd.HasValue)
+            {
+                var val = filters.Hbd.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"hbd>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"hbd<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Rotb.HasValue)
+            {
+                var val = filters.Rotb.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"rotb>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"rotb<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Tpsa.HasValue)
+            {
+                var val = filters.Tpsa.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"tpsa>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"tpsa<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Fsp3.HasValue)
+            {
+                var val = filters.Fsp3.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"fsp3>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"fsp3<={val.Max.Value}");
+                }
+            }
+
+            if (filters.Hac.HasValue)
+            {
+                var val = filters.Mw.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"hac>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"hac<={val.Max.Value}");
+                }
+            }
+
+            return string.Join(" AND ", conditions);
+        }
         
-#warning filters are not supported for now
         public IEnumerable<MoleculeData> Find(SearchQuery searchQuery, FilterQuery filters, int skip, int take)
         {
             string endpoint;
@@ -51,10 +162,18 @@ namespace Search.JavaOPlusD.Api
                     throw new ArgumentException();
             }
 
-            
+
 
 #warning shoud be async
-            var requestTask = _httpClient.GetStringAsync($"{endpoint}?smiles={HttpUtility.UrlEncode(searchQuery.SearchText)}&skip={skip}&take={take}");
+            var url = $"{endpoint}?smiles={HttpUtility.UrlEncode(searchQuery.SearchText)}&skip={skip}&take={take}";
+            if (filters != null) {
+                var filterQuery = BuildFilters(filters);
+                if(filterQuery != "")
+                {
+                    url = $"{url}&filter={HttpUtility.UrlEncode(filterQuery)}";
+                }
+            }
+            var requestTask = _httpClient.GetStringAsync(url);
             requestTask.Wait();
 
             var result = JsonConvert.DeserializeObject<IEnumerable<MoleculeData>>(requestTask.Result);

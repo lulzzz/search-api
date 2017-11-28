@@ -24,12 +24,12 @@ public class Db {
 		Properties connectionProps = new Properties();
 		connectionProps.put("user", "c$dcischem");
 		connectionProps.put("password", "y3wxf1o(PLpt");
-		connectionProps.put("allowMultiQueries", "true");
 	
 		return DriverManager.getConnection(_connectionString, connectionProps);
 	}
 
-	private static final String SELECT_QUERY = "SELECT * FROM (select id, smiles, csc as idnumber, prop_name as name, mw, prop_logp as logp, h_acc as hba, h_don as hbd, rotbonds as rotb, psa as tpsa, fsp3, effha as hac FROM TABLE(search.get_structuresc_array)) WHERE ROWNUM > %1$d AND ROWNUM <= %2$d";
+	private static final String SELECT_QUERY = "select id, smiles, csc as idnumber, prop_name as name, mw, prop_logp as logp, h_acc as hba, h_don as hbd, rotbonds as rotb, psa as tpsa, fsp3, effha as hac FROM TABLE(search.get_structuresc_array)";
+	private static final String RANGE_QUERY = "SELECT * FROM (%s) WHERE ROWNUM > %d AND ROWNUM <= %d";
 
     private List<DbMolecule> findInOracle(String sp, String smiles, String filter, int from, int to) throws SQLException {
 		List<DbMolecule> results = new ArrayList<DbMolecule>();
@@ -44,7 +44,8 @@ public class Db {
 			call.execute();
 
 			select = c.createStatement();
-			ResultSet rs = select.executeQuery(String.format(SELECT_QUERY, from, to));
+			String selectQuery = (filter != null && filter.length() > 0) ? String.format("%s WHERE %s", SELECT_QUERY, filter) : SELECT_QUERY;
+			ResultSet rs = select.executeQuery(String.format(RANGE_QUERY, selectQuery, from, to));
 			while (rs.next()) {
 				DbMolecule mol = new DbMolecule();
 
