@@ -13,8 +13,10 @@ namespace Search.JavaOPlusD.Api
 
         public JavaOPlusDSearchProvider(string serviceUrl)
         {
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri(serviceUrl);
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(serviceUrl)
+            };
         }
 
         public void Dispose()

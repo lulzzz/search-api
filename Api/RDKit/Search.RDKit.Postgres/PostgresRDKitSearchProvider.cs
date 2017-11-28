@@ -3,6 +3,8 @@ using Search.Abstractions;
 using Search.PostgresRDKit.Tables;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Search.PostgresRDKit
@@ -32,7 +34,7 @@ namespace Search.PostgresRDKit
             _connectionString = connectionString;
         }
 
-        private string BuildCondition(SearchQuery searchQuery)
+        static string BuildCondition(SearchQuery searchQuery)
         {
             switch (searchQuery.Type)
             {
@@ -51,14 +53,23 @@ namespace Search.PostgresRDKit
                     throw new ArgumentException();
             }
         }
-
-#warning filters are not supported for now
+        
         public IEnumerable<MoleculeData> Find(SearchQuery query, FilterQuery filters, int skip, int take)
         {
             using (var con = new NpgsqlConnection(_connectionString))
             {
                 var command = con.CreateCommand();
-                command.CommandText = string.Format(selectFromClause, BuildCondition(query));
+                var condition = BuildCondition(query);
+                if (filters != null)
+                {
+                    var filtersClause = BuildFilters(filters);
+                    if (filtersClause != "")
+                    {
+                        condition = $"{condition} AND {filtersClause}";
+                    }
+                }
+
+                command.CommandText = string.Format(selectFromClause, condition);
                 command.Parameters.Add(new NpgsqlParameter("@Limit", take));
                 command.Parameters.Add(new NpgsqlParameter("@Offset", skip));
                 command.Parameters.Add(new NpgsqlParameter("@SearchText", query.SearchText));
@@ -83,6 +94,118 @@ namespace Search.PostgresRDKit
                     };
                 }
             }
+        }
+
+#warning should be reflection
+        static string BuildFilters(FilterQuery filters)
+        {
+            var conditions = new List<string>(8);
+            
+            if (filters.Mw.HasValue)
+            {
+                var val = filters.Mw.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.mw)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.mw)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Logp.HasValue)
+            {
+                var val = filters.Logp.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.logp)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.logp)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Hba.HasValue)
+            {
+                var val = filters.Hba.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hba)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hba)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Hbd.HasValue)
+            {
+                var val = filters.Hbd.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hbd)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hbd)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Rotb.HasValue)
+            {
+                var val = filters.Rotb.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.rotb)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.rotb)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Tpsa.HasValue)
+            {
+                var val = filters.Tpsa.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.tpsa)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.tpsa)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Fsp3.HasValue)
+            {
+                var val = filters.Fsp3.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.fsp3)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.fsp3)}<={val.Min.Value}");
+                }
+            }
+
+            if (filters.Hac.HasValue)
+            {
+                var val = filters.Mw.Value;
+                if (val.Min.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hac)}>={val.Min.Value}");
+                }
+                if (val.Max.HasValue)
+                {
+                    conditions.Add($"{nameof(molecules_raw.hac)}<={val.Min.Value}");
+                }
+            }
+
+            return string.Join(" AND ", conditions);
         }
 
         readonly static string oneCommand = $"SELECT " +

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Search.PostgresRDKit;
-using Search.ApiCore;
 using System;
+using System.Globalization;
 
 namespace Search.RDKit.Api
 {
@@ -9,6 +9,7 @@ namespace Search.RDKit.Api
     {
         public static int Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             var postgresConnectionString = Environment.GetEnvironmentVariable("postgres_connection");
             if (string.IsNullOrEmpty(postgresConnectionString))
             {

@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace Search.JavaOPlusD.Api
 {
@@ -14,6 +8,7 @@ namespace Search.JavaOPlusD.Api
     {
         public static int Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             var componentUrl = Environment.GetEnvironmentVariable("java_oplusd_url");
             if (string.IsNullOrEmpty(componentUrl))
             {
