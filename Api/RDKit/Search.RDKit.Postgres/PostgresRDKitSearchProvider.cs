@@ -53,7 +53,8 @@ namespace Search.PostgresRDKit
                     throw new ArgumentException();
             }
         }
-        
+
+#warning add query preprocessing to avoid 'bad' queries and possibly optimize the query
         public IEnumerable<MoleculeData> Find(SearchQuery query, FilterQuery filters, int skip, int take)
         {
             using (var con = new NpgsqlConnection(_connectionString))
@@ -110,7 +111,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.mw)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.mw)}<={val.Max.Value}");
                 }
             }
 
@@ -123,7 +124,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.logp)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.logp)}<={val.Max.Value}");
                 }
             }
 
@@ -136,7 +137,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.hba)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.hba)}<={val.Max.Value}");
                 }
             }
 
@@ -149,7 +150,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.hbd)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.hbd)}<={val.Max.Value}");
                 }
             }
 
@@ -162,7 +163,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.rotb)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.rotb)}<={val.Max.Value}");
                 }
             }
 
@@ -175,7 +176,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.tpsa)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.tpsa)}<={val.Max.Value}");
                 }
             }
 
@@ -188,7 +189,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.fsp3)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.fsp3)}<={val.Max.Value}");
                 }
             }
 
@@ -201,7 +202,7 @@ namespace Search.PostgresRDKit
                 }
                 if (val.Max.HasValue)
                 {
-                    conditions.Add($"{nameof(molecules_raw.hac)}<={val.Min.Value}");
+                    conditions.Add($"{nameof(molecules_raw.hac)}<={val.Max.Value}");
                 }
             }
 

@@ -6,7 +6,6 @@ CREATE TABLE molecules_raw (id SERIAL primary key, smiles text, idnumber text, n
 EndCreate
 tail -n +2 ./src.txt | psql -h rdkit-postgres -d simsearch -c "COPY molecules_raw (smiles, idnumber, name, mw, logp, hba, hbd, rotb, tpsa, fsp3, hac) FROM STDIN WITH DELIMITER e'\t';"
 psql -h rdkit-postgres simsearch << EOF
-create index raw_sml_idx on molecules_raw using hash(smiles);
 create index raw_name_idx on molecules_raw using hash(name);
 create index raw_idnum_idx on molecules_raw using hash(idnumber);
 select id, mol_from_smiles(smiles::cstring) mol, morganbv_fp(mol_from_smiles(smiles::cstring)) fp into mols from molecules_raw;
