@@ -12,18 +12,20 @@ import java.util.Properties;
 
 public class Db {
 
-	
-
 	private final String _connectionString;
+	private final String _username;
+	private final String _password;
 
-	public Db(String connectionString) {
+	public Db(String connectionString, String username, String password) {
 		_connectionString = connectionString;
+		_username = username;
+		_password = password;
 	}
 
     private Connection getConnection() throws SQLException {
 		Properties connectionProps = new Properties();
-		connectionProps.put("user", "c$dcischem");
-		connectionProps.put("password", "y3wxf1o(PLpt");
+		connectionProps.put("user", _username);
+		connectionProps.put("password", _password);
 	
 		return DriverManager.getConnection(_connectionString, connectionProps);
 	}
@@ -101,6 +103,3 @@ public class Db {
 
 // select * from table(search.get_structurebb_array)
 // select * from table(search.get_structuresc_array)
-
-// select * from table(search.get_itembb_array()) item join table(search.get_structurebb_array) structure on item.id
-// select * from table(search.get_itemsc_array())

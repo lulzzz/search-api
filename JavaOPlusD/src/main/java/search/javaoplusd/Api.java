@@ -41,12 +41,14 @@ public class Api
 	public final static void main(String[] args)
 	{
 		String con = System.getenv("ora_connection");
+		String user = System.getenv("ora_user"); // c$dcischem
+		String pass = System.getenv("ora_pass"); // y3wxf1o(PLpt
 
 		if(con == null || con.length() == 0) {
 			System.exit(-1);
 		}
 
-		_db = new Db(con);
+		_db = new Db(con, user, pass);
 
 		new SpringApplicationBuilder(Api.class).run(args);
 	}

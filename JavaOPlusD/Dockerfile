@@ -36,4 +36,4 @@ COPY --from=build-env ~/api/target/myproject-0.0.1-SNAPSHOT.jar ./myproject-0.0.
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "myproject-0.0.1-SNAPSHOT.jar", "jdbc:oracle:thin:@10.3.80.181:1521:chemspace"]
+ENTRYPOINT ["java", "-jar", "myproject-0.0.1-SNAPSHOT.jar"]

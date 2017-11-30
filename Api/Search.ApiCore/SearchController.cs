@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Search.ApiCore
 {
@@ -17,20 +18,16 @@ namespace Search.ApiCore
 
         [HttpPost]
         [Route("search")]
-        public SearchResult Search(SearchRequest request)
+        public async Task<SearchResult> Search(SearchRequest request)
         {
-            var mols = _searchProvider
-                .Find(new SearchQuery { SearchText = request.Text, Type = request.Type }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value)
-                .ToArray();
+            var mols = await _searchProvider
+                .FindAsync(new SearchQuery { SearchText = request.Text, Type = request.Type }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value);
 
-            return new SearchResult { Molecules = mols };
+            return new SearchResult { Molecules = mols.ToList() };
         }
         
         [HttpGet]
         [Route("{id}")]
-        public MoleculeData One([FromRoute]string id)
-        {
-            return _searchProvider.Item(id);
-        }
+        public Task<MoleculeData> One([FromRoute]string id) => _searchProvider.ItemAsync(id);
     }
 }

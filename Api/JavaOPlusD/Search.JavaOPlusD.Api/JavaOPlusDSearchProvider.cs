@@ -4,6 +4,7 @@ using System.Net.Http;
 using System;
 using Newtonsoft.Json;
 using System.Web;
+using System.Threading.Tasks;
 
 namespace Search.JavaOPlusD.Api
 {
@@ -139,7 +140,7 @@ namespace Search.JavaOPlusD.Api
             return string.Join(" AND ", conditions);
         }
         
-        public IEnumerable<MoleculeData> Find(SearchQuery searchQuery, FilterQuery filters, int skip, int take)
+        public async Task<IEnumerable<MoleculeData>> FindAsync(SearchQuery searchQuery, FilterQuery filters, int skip, int take)
         {
             string endpoint;
             switch (searchQuery.Type)
@@ -161,10 +162,7 @@ namespace Search.JavaOPlusD.Api
                 default:
                     throw new ArgumentException();
             }
-
-
-
-#warning shoud be async
+            
             var url = $"{endpoint}?smiles={HttpUtility.UrlEncode(searchQuery.SearchText)}&skip={skip}&take={take}";
             if (filters != null) {
                 var filterQuery = BuildFilters(filters);
@@ -173,15 +171,13 @@ namespace Search.JavaOPlusD.Api
                     url = $"{url}&filter={HttpUtility.UrlEncode(filterQuery)}";
                 }
             }
-            var requestTask = _httpClient.GetStringAsync(url);
-            requestTask.Wait();
 
-            var result = JsonConvert.DeserializeObject<IEnumerable<MoleculeData>>(requestTask.Result);
+            var response = await _httpClient.GetStringAsync(url);
 
-            return result;
+            return JsonConvert.DeserializeObject<IEnumerable<MoleculeData>>(response);
         }
 
-        public MoleculeData Item(string id)
+        public Task<MoleculeData> ItemAsync(string id)
         {
             throw new System.NotImplementedException();
         }
