@@ -1,6 +1,6 @@
 ﻿#pragma warning disable IDE1006 // Naming Styles
 
-namespace Search.PostgresRDKit.Tables
+namespace Search.RDKit.Postgres.Tables
 {
     public class molecules_raw
     {

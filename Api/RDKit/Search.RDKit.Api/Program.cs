@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Search.PostgresRDKit;
+using Search.RDKit.Postgres;
 using System;
 using System.Globalization;
 
@@ -19,7 +19,7 @@ namespace Search.RDKit.Api
 
             var searchProvider = new PostgresRDKitSearchProvider(postgresConnectionString);
 
-            ApiCore.Api.BuildHost(args, searchProvider).Run();
+            ApiCore.Api.BuildHost(searchProvider).Run();
             return 0;
         }
     }

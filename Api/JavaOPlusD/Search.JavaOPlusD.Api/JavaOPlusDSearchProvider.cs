@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Search.JavaOPlusD.Api
 {
-    public sealed class JavaOPlusDSearchProvider : ISearchProvider, IDisposable
+    public sealed class JavaOPlusDSearchProvider : ICatalog<string, MoleculeData>, IDisposable
     {
         readonly HttpClient _httpClient;
 

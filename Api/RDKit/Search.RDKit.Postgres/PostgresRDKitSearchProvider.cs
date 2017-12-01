@@ -1,17 +1,16 @@
 ﻿using Npgsql;
 using Search.Abstractions;
-using Search.PostgresRDKit.Tables;
+using Search.RDKit.Postgres.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Search.PostgresRDKit
+namespace Search.RDKit.Postgres
 {
-    public class PostgresRDKitSearchProvider : ISearchProvider
+    public class PostgresRDKitSearchProvider : ICatalog<string, MoleculeData>
     {
+#warning should be reflection        
         readonly static string selectFromClause = $"SELECT " +
             $"mr.{nameof(molecules_raw.idnumber)}, " +
             $"mr.{nameof(molecules_raw.smiles)}, " +
