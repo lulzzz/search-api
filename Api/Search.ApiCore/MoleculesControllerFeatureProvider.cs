@@ -10,16 +10,18 @@ namespace Search.ApiCore
     {
         readonly Type _tId;
         readonly Type _tData;
+        readonly Type _tFilterQuery;
 
-        public MoleculesControllerFeatureProvider(Type tId, Type tData)
+        public MoleculesControllerFeatureProvider(Type tId, Type tFilterQuery, Type tData)
         {
             _tId = tId;
             _tData = tData;
+            _tFilterQuery = tFilterQuery;
         }
 
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
         {
-            feature.Controllers.Add(typeof(MoleculesControllerBase<,>).MakeGenericType(_tId, _tData).GetTypeInfo());
+            feature.Controllers.Add(typeof(MoleculesControllerBase<,,>).MakeGenericType(_tId, _tFilterQuery, _tData).GetTypeInfo());
         }
     }
 }

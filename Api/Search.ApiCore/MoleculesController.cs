@@ -8,27 +8,28 @@ namespace Search.ApiCore
     [Route("molecules")]
     [Controller]
     [MoleculesControllerNameConvention]
-    public sealed class MoleculesControllerBase<TId, TData> // : ControllerBase
+    public sealed class MoleculesControllerBase<TId, TFilterQuery, TData>
     {
-        public MoleculesControllerBase(ICatalog<TId, TData> catalog)
+        readonly ICatalog<TId, TFilterQuery, TData> _catalog;
+
+        public MoleculesControllerBase(ICatalog<TId, TFilterQuery, TData> catalog)
         {
-            Catalog = catalog;
+            _catalog = catalog;
         }
 
-        public ICatalog<TId, TData> Catalog { get; }
         
         [HttpPost]
         [Route("search")]
-        public async Task<object> Search(SearchRequest request)
+        public async Task<object> Search(SearchRequest<TFilterQuery> request)
         {
-            var mols = await Catalog
+            var mols = await _catalog
                 .FindAsync(new SearchQuery { SearchText = request.Text, Type = request.Type }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value);
 
-            return new { Molecules = mols.ToList() };
+            return new { Molecules = mols.Data.ToList() };
         }
         
         [HttpGet]
         [Route("{id}")]
-        public Task<TData> One([FromRoute]TId id) => Catalog.ItemAsync(id);
+        public Task<TData> One([FromRoute]TId id) => _catalog.ItemAsync(id);
     }
 }

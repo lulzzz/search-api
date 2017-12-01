@@ -20,6 +20,8 @@ services:
       dockerfile: dockerfile
     ports:
     - "5432:5432"
+    volumes:
+    - ~/rdkit-postgres-data:/var/lib/postgresql/data
     # network_mode: "host"
   java-oplusd:
     image: java-oplusd

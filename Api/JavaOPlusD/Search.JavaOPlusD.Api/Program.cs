@@ -18,7 +18,7 @@ namespace Search.JavaOPlusD.Api
 
             using (var searchProvider = new JavaOPlusDSearchProvider(componentUrl))
             { 
-                ApiCore.Api.BuildHost(args, searchProvider).Run();
+                ApiCore.Api.BuildHost(searchProvider).Run();
             }
             return 0;
         }

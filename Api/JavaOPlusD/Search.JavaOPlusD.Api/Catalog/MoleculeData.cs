@@ -1,5 +1,5 @@
-﻿namespace Search.Abstractions
-{
+﻿namespace Search.JavaOPlusD
+{ 
     public class MoleculeData
     {
         public string IdNumber { get; set; }

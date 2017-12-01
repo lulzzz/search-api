@@ -13,7 +13,7 @@ namespace Search.ApiCore
     //    public Operator Type { get; set; }
     //}
 
-    public class SearchRequest
+    public class SearchRequest<TFilterQuery>
     {
         /// <summary>
         /// Search text that is SMILES for all search types except '<see cref="SearchType.Smart"/>'
@@ -31,6 +31,6 @@ namespace Search.ApiCore
         public int? PageNumber { get; set; } = 1;
 
         [FromBody]
-        public FilterQuery Filters { get; set; }
+        public TFilterQuery Filters { get; set; }
     }
 }

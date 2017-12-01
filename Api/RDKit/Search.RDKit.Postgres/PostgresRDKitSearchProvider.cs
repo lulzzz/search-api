@@ -1,16 +1,16 @@
 ﻿using Npgsql;
 using Search.Abstractions;
 using Search.RDKit.Postgres.Tables;
+using Search.SqlCommon;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Search.RDKit.Postgres
 {
-    public class PostgresRDKitSearchProvider : ICatalog<string, MoleculeData>
+    public class PostgresRDKitSearchProvider : ICatalog<string, FilterQuery, MoleculeData>
     {
-#warning should be reflection        
+#warning should be reflection based on MoleculeData wout molecules_raw
         readonly static string selectFromClause = $"SELECT " +
             $"mr.{nameof(molecules_raw.idnumber)}, " +
             $"mr.{nameof(molecules_raw.smiles)}, " +
@@ -55,7 +55,7 @@ namespace Search.RDKit.Postgres
         }
 
 #warning add query preprocessing to avoid 'bad' queries and possibly optimize the query
-        public async Task<IEnumerable<MoleculeData>> FindAsync(SearchQuery query, FilterQuery filters, int skip, int take)
+        public async Task<CatalogResult<MoleculeData>> FindAsync(SearchQuery query, FilterQuery filters, int skip, int take)
         {
             using (var con = new NpgsqlConnection(_connectionString))
             {
@@ -63,7 +63,7 @@ namespace Search.RDKit.Postgres
                 var condition = BuildCondition(query);
                 if (filters != null)
                 {
-                    var filtersClause = BuildFilters(filters);
+                    var filtersClause = FilterBuilder.BuildFilters(filters);
                     if (filtersClause != "")
                     {
                         condition = $"{condition} AND {filtersClause}";
@@ -97,41 +97,13 @@ namespace Search.RDKit.Postgres
                     });
                 }
 
-                return results;
+                return new CatalogResult<MoleculeData> { Data = results };
             }
         }
 
-        static IEnumerable<string> BuildFilter<T>(FilterQuery.Filter<T>? filter, string colName) where T : struct
-        {
-            if (filter.HasValue)
-            {
-                var val = filter.Value;
-                if (val.Min.HasValue)
-                {
-                    yield return $"{colName}>={val.Min.Value}";
-                }
-                if (val.Max.HasValue)
-                {
-                    yield return $"{colName}<={val.Max.Value}";
-                }
-            }
-        }
 
-#warning should be reflection
-        static string BuildFilters(FilterQuery filters)
-        {
-            var conditions = BuildFilter(filters.Mw, nameof(molecules_raw.mw))
-                .Union(BuildFilter(filters.Logp, nameof(molecules_raw.logp)))
-                .Union(BuildFilter(filters.Hba, nameof(molecules_raw.hba)))
-                .Union(BuildFilter(filters.Hbd, nameof(molecules_raw.hbd)))
-                .Union(BuildFilter(filters.Rotb, nameof(molecules_raw.rotb)))
-                .Union(BuildFilter(filters.Tpsa, nameof(molecules_raw.tpsa)))
-                .Union(BuildFilter(filters.Fsp3, nameof(molecules_raw.fsp3)))
-                .Union(BuildFilter(filters.Hac, nameof(molecules_raw.hac)));
 
-            return string.Join(" AND ", conditions);
-        }
-
+#warning should be reflection based on MoleculeData
         readonly static string oneCommand = $"SELECT " +
             $"{nameof(molecules_raw.smiles)}, " +
             $"{nameof(molecules_raw.name)}, " +

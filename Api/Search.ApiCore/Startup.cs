@@ -18,7 +18,7 @@ namespace Search.ApiCore
         public void ConfigureServices(IServiceCollection services)
         {
             var catalogServiceTypeArguments = services
-                .FirstOrDefault(s => s.ServiceType.IsConstructedGenericType && s.ServiceType.GetGenericTypeDefinition() == typeof(ICatalog<,>))
+                .FirstOrDefault(s => s.ServiceType.IsConstructedGenericType && s.ServiceType.GetGenericTypeDefinition() == typeof(ICatalog<,,>))
                 ?.ServiceType.GenericTypeArguments;
 
             services.AddCors();
@@ -28,7 +28,7 @@ namespace Search.ApiCore
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .ConfigureApplicationPartManager(apm =>
                 {
-                    apm.FeatureProviders.Add(new MoleculesControllerFeatureProvider(catalogServiceTypeArguments[0], catalogServiceTypeArguments[1]));
+                    apm.FeatureProviders.Add(new MoleculesControllerFeatureProvider(catalogServiceTypeArguments[0], catalogServiceTypeArguments[1], catalogServiceTypeArguments[2]));
                 })
                 .AddApiExplorer()
                 .AddDataAnnotations()

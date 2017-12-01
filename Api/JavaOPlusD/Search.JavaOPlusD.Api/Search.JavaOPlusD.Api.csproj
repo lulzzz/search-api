@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Search.Abstractions\Search.Abstractions.csproj" />
     <ProjectReference Include="..\..\Search.ApiCore\Search.ApiCore.csproj" />
+    <ProjectReference Include="..\..\Search.SqlCommon\Search.SqlCommon.csproj" />
   </ItemGroup>
 
 </Project>
