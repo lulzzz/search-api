@@ -81,6 +81,7 @@ namespace Search.RDKit.Postgres
 
                 while (reader.Read())
                 {
+#warning should be reflection
                     results.Add(new MoleculeData
                     {
                         IdNumber = (string)reader[nameof(molecules_raw.idnumber)],

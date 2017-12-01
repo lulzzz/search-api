@@ -4,6 +4,6 @@ namespace Search.Abstractions
 {
     public interface ISearchProvider<TId>
     {
-        Task<ISearchResult<TId>> FindAsync(SearchQuery searchQuery);
+        Task<ISearchResult<TId>> FindAsync(SearchQuery searchQuery, int fastFetchCount);
     }
 }
