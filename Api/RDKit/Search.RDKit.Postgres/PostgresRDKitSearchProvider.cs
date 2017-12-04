@@ -1,31 +1,63 @@
 ﻿using Npgsql;
 using Search.Abstractions;
 using Search.RDKit.Postgres.Tables;
-using Search.SqlCommon;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections;
+using System.Data.Common;
 
 namespace Search.RDKit.Postgres
 {
-    public class PostgresRDKitSearchProvider : ICatalog<string, FilterQuery, MoleculeData>
+    public class PostgresRDKitSearchProvider : ISearchProvider<string>
     {
-#warning should be reflection based on MoleculeData wout molecules_raw
-        readonly static string selectFromClause = $"SELECT " +
-            $"mr.{nameof(molecules_raw.idnumber)}, " +
-            $"mr.{nameof(molecules_raw.smiles)}, " +
-            $"mr.{nameof(molecules_raw.name)}, " +
-            $"mr.{nameof(molecules_raw.mw)}, " +
-            $"mr.{nameof(molecules_raw.logp)}, " +
-            $"mr.{nameof(molecules_raw.hba)}, " +
-            $"mr.{nameof(molecules_raw.hbd)}, " +
-            $"mr.{nameof(molecules_raw.rotb)}, " +
-            $"mr.{nameof(molecules_raw.tpsa)}, " +
-            $"mr.{nameof(molecules_raw.fsp3)}, " +
-            $"mr.{nameof(molecules_raw.hac)} " +
-            $"FROM {nameof(molecules_raw)} mr INNER JOIN {nameof(mols)} ms ON mr.{nameof(molecules_raw.id)}=ms.{nameof(mols.id)} " +
-            "WHERE {0} " +
-            "LIMIT @Limit OFFSET @Offset";
+        private class SearchResult : ISearchResult<string>
+        {
+            readonly NpgsqlConnection _c;
+            readonly NpgsqlTransaction _t;
+            readonly NpgsqlCommand _com;
+            readonly List<string> _fastFetched;
+
+            bool enumerated;
+
+            public SearchResult(NpgsqlConnection c, NpgsqlTransaction t, NpgsqlCommand com, List<string> fastFetched)
+            {
+                _c = c;
+                _t = t;
+                _com = com;
+                _fastFetched = fastFetched;
+            }
+
+            public void Dispose()
+            {
+                _t.Commit();
+                _c.Close();
+            }
+
+            public IEnumerator<string> GetEnumerator()
+            {
+#warning reimplement to allow searchresult to keep its data
+                if(enumerated)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                enumerated = true;
+
+                foreach (var item in _fastFetched)
+                {
+                    yield return item;
+                }
+                foreach (var item in _fetchingReader)
+                {
+                    yield return item;
+                }
+
+                Dispose();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
 
         readonly string _connectionString;
 
@@ -34,125 +66,48 @@ namespace Search.RDKit.Postgres
             _connectionString = connectionString;
         }
 
-        static string BuildCondition(SearchQuery searchQuery)
+        readonly static string selectFromClause = $"DECLARE search_cur CURSOR FOR SELECT mr.{nameof(molecules_raw.idnumber)} " + 
+            $"FROM {nameof(molecules_raw)} mr INNER JOIN {nameof(mols)} ms ON mr.{nameof(molecules_raw.id)}=ms.{nameof(mols.id)} " +
+            "WHERE {0}";
+
+        readonly static string fetchLimitedQuery = "FETCH {0} FROM search_cur";
+
+        public async Task<ISearchResult<string>> FindAsync(SearchQuery searchQuery, int fastFetchCount)
         {
-            switch (searchQuery.Type)
+            var con = new NpgsqlConnection(_connectionString);
+
+            con.Open();
+
+            var t = con.BeginTransaction();
+
+            var searchCommand = con.CreateCommand();
+            var condition = CommonQueries.BuildCondition(searchQuery);
+            searchCommand.CommandText = string.Format(selectFromClause, condition);
+            searchCommand.Parameters.Add(new NpgsqlParameter("@SearchText", searchQuery.SearchText));
+
+            var fastFetchCommand = con.CreateCommand();
+            fastFetchCommand.CommandText = string.Format(fetchLimitedQuery, fastFetchCount);
+
+            var fetchAllCommand = con.CreateCommand();
+            fetchAllCommand.CommandText = fetchAllQuery;
+
+            await searchCommand.ExecuteNonQueryAsync();
+
+            var results = new List<string>();
+
+            using (var fastReader = await fastFetchCommand.ExecuteReaderAsync())
             {
-#warning Smart is not actually implemented, for now is exact molecule
-                case SearchType.Smart:
-                case SearchType.Exact:
-                    return "ms.mol=mol_from_smiles(@SearchText::cstring)";
-                case SearchType.Substructure:
-                    return "ms.mol@>mol_from_smiles(@SearchText::cstring)";// ORDER BY tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), ms.fp) DESC";
-                case SearchType.Similar:
-#warning subject to query corrections
-                    return "morganbv_fp(mol_from_smiles(@SearchText::cstring))%ms.fp";// ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>ms.fp";
-                case SearchType.Superstructure:
-                    return "ms.mol<@mol_from_smiles(@SearchText::cstring)";// ORDER BY tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), ms.fp) DESC";
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-#warning add query preprocessing to avoid 'bad' queries and possibly optimize the query
-        public async Task<CatalogResult<MoleculeData>> FindAsync(SearchQuery query, FilterQuery filters, int skip, int take)
-        {
-            using (var con = new NpgsqlConnection(_connectionString))
-            {
-                var command = con.CreateCommand();
-                var condition = BuildCondition(query);
-                if (filters != null)
+                while (fastReader.Read())
                 {
-                    var filtersClause = FilterBuilder.BuildFilters(filters);
-                    if (filtersClause != "")
-                    {
-                        condition = $"{condition} AND {filtersClause}";
-                    }
-                }
-
-                command.CommandText = string.Format(selectFromClause, condition);
-                command.Parameters.Add(new NpgsqlParameter("@Limit", take));
-                command.Parameters.Add(new NpgsqlParameter("@Offset", skip));
-                command.Parameters.Add(new NpgsqlParameter("@SearchText", query.SearchText));
-
-                con.Open();
-                var reader = await command.ExecuteReaderAsync();
-                var results = new List<MoleculeData>();
-
-                while (reader.Read())
-                {
-#warning should be reflection
-                    results.Add(new MoleculeData
-                    {
-                        IdNumber = (string)reader[nameof(molecules_raw.idnumber)],
-                        Smiles = (string)reader[nameof(molecules_raw.smiles)],
-                        Name = (string)reader[nameof(molecules_raw.name)],
-                        Mw = (double)reader[nameof(molecules_raw.mw)],
-                        Logp = (double)reader[nameof(molecules_raw.logp)],
-                        Hba = (int)reader[nameof(molecules_raw.hba)],
-                        Hbd = (int)reader[nameof(molecules_raw.hbd)],
-                        Rotb = (int)reader[nameof(molecules_raw.rotb)],
-                        Tpsa = (double)reader[nameof(molecules_raw.tpsa)],
-                        Fsp3 = (double)reader[nameof(molecules_raw.fsp3)],
-                        Hac = (int)reader[nameof(molecules_raw.hac)],
-                    });
-                }
-
-                return new CatalogResult<MoleculeData> { Data = results };
-            }
-        }
-
-
-
-#warning should be reflection based on MoleculeData
-        readonly static string oneCommand = $"SELECT " +
-            $"{nameof(molecules_raw.smiles)}, " +
-            $"{nameof(molecules_raw.name)}, " +
-            $"{nameof(molecules_raw.mw)}, " +
-            $"{nameof(molecules_raw.logp)}, " +
-            $"{nameof(molecules_raw.hba)}, " +
-            $"{nameof(molecules_raw.hbd)}, " +
-            $"{nameof(molecules_raw.rotb)}, " +
-            $"{nameof(molecules_raw.tpsa)}, " +
-            $"{nameof(molecules_raw.fsp3)}, " +
-            $"{nameof(molecules_raw.hac)} " +
-            $"FROM {nameof(molecules_raw)} " +
-            $"WHERE idnumber = @{nameof(molecules_raw.idnumber)}";
-
-        public async Task<MoleculeData> ItemAsync(string id)
-        {
-            using (var con = new NpgsqlConnection(_connectionString))
-            {
-                var command = con.CreateCommand();
-                command.CommandText = oneCommand;
-
-                command.Parameters.Add(new NpgsqlParameter($"@{nameof(molecules_raw.idnumber)}", id));
-
-                await con.OpenAsync();
-                var reader = await command.ExecuteReaderAsync();
-
-                if (reader.Read())
-                {
-                    return new MoleculeData
-                    {
-                        IdNumber = id,
-                        Smiles = (string)reader[nameof(molecules_raw.smiles)],
-                        Name = (string)reader[nameof(molecules_raw.name)],
-                        Mw = (double)reader[nameof(molecules_raw.mw)],
-                        Logp = (double)reader[nameof(molecules_raw.logp)],
-                        Hba = (int)reader[nameof(molecules_raw.hba)],
-                        Hbd = (int)reader[nameof(molecules_raw.hbd)],
-                        Rotb = (int)reader[nameof(molecules_raw.rotb)],
-                        Tpsa = (double)reader[nameof(molecules_raw.tpsa)],
-                        Fsp3 = (double)reader[nameof(molecules_raw.fsp3)],
-                        Hac = (int)reader[nameof(molecules_raw.hac)],
-                    };
-                }
-                else
-                {
-                    return null;
+                    results.Add((string)fastReader[nameof(molecules_raw.idnumber)]);
                 }
             }
+
+            fetchAllCommand.ExecuteReaderAsync();
+
+            //var restResults = Read(await fetchAllCommand.ExecuteReaderAsync());
+
+            return new SearchResult(con, t, fetchAllCommand, results);
         }
     }
 }

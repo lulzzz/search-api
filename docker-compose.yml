@@ -9,6 +9,8 @@ services:
     ports:
     - "5000:5000"
     environment:
+    # - http_proxy='http://10.3.80.80:3128'
+    # - https_proxy='http://10.3.80.80:3128'
     - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=simsearch;Pooling=true;
     # network_mode: "host"
@@ -22,6 +24,9 @@ services:
     - "5432:5432"
     volumes:
     - ~/rdkit-postgres-data:/var/lib/postgresql/data
+    # environment:
+    # - http_proxy=http://10.3.80.80:3128
+    # - https_proxy=http://10.3.80.80:3128
     # network_mode: "host"
   java-oplusd:
     image: java-oplusd
@@ -33,6 +38,8 @@ services:
       - "8080:8080"
     environment:
       - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
+      # - http_proxy=http://10.3.80.80:3128
+      # - https_proxy=http://10.3.80.80:3128
   oplusd-search-api:
     image: oplusd-search-api
     build:
@@ -43,3 +50,5 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5001
       - java_oplusd_url=http://java-oplusd:8080
+      # - http_proxy=http://10.3.80.80:3128
+      # - https_proxy=http://10.3.80.80:3128

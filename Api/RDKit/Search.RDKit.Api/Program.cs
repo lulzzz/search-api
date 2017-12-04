@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Search.MongoDB;
 using Search.RDKit.Postgres;
 using System;
 using System.Globalization;
@@ -17,9 +18,11 @@ namespace Search.RDKit.Api
                 return 1;
             }
 
-            var searchProvider = new PostgresRDKitSearchProvider(postgresConnectionString);
+            //var searchProvider = new PostgresRDKitCatalog(postgresConnectionString);
 
-            ApiCore.Api.BuildHost(searchProvider).Run();
+            var catalog = new GenericCatalog<string, FilterQuery, MoleculeData>(new PostgresRDKitSearchProvider(postgresConnectionString), new PostgresFilterEnricher(postgresConnectionString));
+
+            ApiCore.Api.BuildHost(catalog).Run();
             return 0;
         }
     }

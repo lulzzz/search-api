@@ -2,6 +2,9 @@
 
 FROM microsoft/dotnet:sdk AS build-env
 
+ENV http_proxy='http://10.3.80.80:3128'
+ENV https_proxy='http://10.3.80.80:3128'
+
 COPY . ~/api
 
 WORKDIR ~/api

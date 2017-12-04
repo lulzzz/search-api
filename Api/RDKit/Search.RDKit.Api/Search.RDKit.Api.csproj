@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Search.ApiCore\Search.ApiCore.csproj" />
+    <ProjectReference Include="..\..\Search.MongoDB\Search.MongoDB.csproj" />
     <ProjectReference Include="..\Search.RDKit.Postgres\Search.RDKit.Postgres.csproj" />
   </ItemGroup>
 
