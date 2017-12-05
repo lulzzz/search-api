@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,7 +48,7 @@ namespace Search.Abstractions.Batching
             /// mock for possible strategy in future
             /// </summary>
             /// <returns></returns>
-            int GetHitLimit() => 2000;
+            int GetHitLimit() => 200000;
 
             readonly int _batchSize;
             int GetBatchSize() => _batchSize;
@@ -72,7 +71,7 @@ namespace Search.Abstractions.Batching
                             var expectedSize = GetBatchSize();
 
                             await _semaphore.WaitAsync();
-                            var batch = await r.Next(expectedSize);
+                            var batch = await r.Next(expectedSize).ConfigureAwait(false);
 
                             loadedBatches.Add(batch);
                             leftToFetch -= batch.Length;
@@ -93,7 +92,7 @@ namespace Search.Abstractions.Batching
                         }
                     }
 #warning must be properly exception-handled in else { ... }
-                });
+                }, TaskContinuationOptions.LongRunning);
             }
 
             public IEnumerator<TId> GetEnumerator()

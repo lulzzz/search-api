@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace Search.Abstractions
+namespace Search.Abstractions.Batching
 {
     public interface IBatchSearcher<TId>
     {

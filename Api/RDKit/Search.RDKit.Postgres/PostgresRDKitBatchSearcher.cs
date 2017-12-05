@@ -1,10 +1,10 @@
 ﻿using Npgsql;
 using Search.Abstractions;
+using Search.Abstractions.Batching;
 using Search.RDKit.Postgres.Tables;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Search.RDKit.Postgres

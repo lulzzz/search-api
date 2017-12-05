@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Search.Abstractions
+﻿namespace Search.Abstractions
 {
     public class SearchQuery
     {
