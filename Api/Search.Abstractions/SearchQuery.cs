@@ -9,7 +9,5 @@ namespace Search.Abstractions
         public SearchType Type { get; set; }
         
         public string SearchText { get; set; }
-
-        public override int GetHashCode() => $"{Type}|{SearchText}".GetHashCode();
     }
 }

@@ -45,6 +45,7 @@ namespace Search.RDKit.Postgres
                 command.CommandText = string.IsNullOrEmpty(condition)
                     ? selectFromClause
                     : $"{selectFromClause} WHERE {condition}";
+                command.Parameters.Add(new NpgsqlParameter("@IDs", ids));
 
                 con.Open();
                 var reader = await command.ExecuteReaderAsync();

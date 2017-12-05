@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Search.Abstractions.Batching;
 using Search.MongoDB;
 using Search.RDKit.Postgres;
 using System;
@@ -20,7 +21,11 @@ namespace Search.RDKit.Api
 
             //var searchProvider = new PostgresRDKitCatalog(postgresConnectionString);
 
-            var catalog = new GenericCatalog<string, FilterQuery, MoleculeData>(new PostgresRDKitSearchProvider(postgresConnectionString), new PostgresFilterEnricher(postgresConnectionString));
+            var catalog = 
+                new GenericCatalog<string, FilterQuery, MoleculeData>(
+                    new BatchSearchProvider<string>(
+                        new PostgresRDKitBatchSearcher(postgresConnectionString)), 
+                    new PostgresFilterEnricher(postgresConnectionString));
 
             ApiCore.Api.BuildHost(catalog).Run();
             return 0;
