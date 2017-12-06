@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Search.MongoDB
+namespace Search.GenericComponents
 {
     public class GenericCatalog<TId, TFilterQuery, TData> : ICatalog<TId, TFilterQuery, TData>
     {
@@ -23,11 +23,12 @@ namespace Search.MongoDB
             var result = await _search.FindAsync(searchQuery, limit);
             var buffer = new List<TId>();
             var results = new List<TData>();
-            
-            foreach (var item in result)
+
+            // returns foreach break condition
+            async Task<bool> foreachBody(TId item)
             {
                 buffer.Add(item);
-                if(buffer.Count == limit)
+                if (buffer.Count == limit)
                 {
                     var filtered = (await _filterEnricher.FilterAndEnrich(buffer, filters)).ToList();
                     var filteredCount = filtered.Count;
@@ -35,9 +36,31 @@ namespace Search.MongoDB
                     if (results.Count >= skip + take)
                     {
                         buffer.Clear();
-                        break;
+                        return false;
                     }
                     limit = limit * limit / filteredCount - limit;
+                }
+                return true;
+            }
+
+            if (result.HasReadyResult)
+            {
+                foreach (var item in result.ReadyResult)
+                {
+                    if (!await foreachBody(item))
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var item in result.AsyncResult)
+                {
+                    if (!await foreachBody(await item))
+                    {
+                        break;
+                    }
                 }
             }
 

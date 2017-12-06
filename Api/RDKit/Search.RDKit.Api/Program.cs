@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Search.Abstractions.Batching;
-using Search.MongoDB;
+using Search.GenericComponents;
 using Search.RDKit.Postgres;
 using System;
 using System.Globalization;
