@@ -51,8 +51,8 @@ namespace Search.GenericComponents
 
             readonly object _syncObj = new object();
 
-            bool ISearchResult<TId>.HasReadyResult => _runningTask == null;
-            IEnumerable<TId> ISearchResult<TId>.ReadyResult
+            public bool HasReadyResult => _runningTask == null;
+            public IEnumerable<TId> ReadyResult
             {
                 get
                 {
@@ -120,7 +120,34 @@ namespace Search.GenericComponents
                 return loaded[index];
             }
 
-            IEnumerable<Task<TId>> ISearchResult<TId>.AsyncResult
+            async Task ISearchResult<TId>.ForEach(Func<TId, Task<bool>> body)
+            {
+                if (HasReadyResult)
+                {
+                    foreach (var item in ReadyResult)
+                    {
+                        var @continue = await body(item);
+                        if (!@continue)
+                        {
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var itemTask in AsyncResult)
+                    {
+                        var item = await itemTask;
+                        var @continue = await body(item);
+                        if (!@continue)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            public IEnumerable<Task<TId>> AsyncResult
             {
                 get
                 {

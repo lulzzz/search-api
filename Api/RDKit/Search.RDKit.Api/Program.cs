@@ -24,7 +24,7 @@ namespace Search.RDKit.Api
                 new GenericCatalog<string, FilterQuery, MoleculeData>(
                     new BatchSearchProvider<string>(
                         new PostgresRDKitBatchSearcher(postgresConnectionString),
-                        int.MaxValue), // can be passed from outside
+                        10000), // can be passed from outside
                     new PostgresFilterEnricher(postgresConnectionString));
 
             ApiCore.Api.BuildHost(catalog).Run();
