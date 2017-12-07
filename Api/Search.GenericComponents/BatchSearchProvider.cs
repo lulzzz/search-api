@@ -85,7 +85,7 @@ namespace Search.GenericComponents
                 {
                     var leftToFetch = GetHitLimit();
                     var r = await searchTask;
-
+#warning lacks proper error handling
                     async Task LoadBatchAsync()
                     {
                         var expectedSize = GetBatchSize();
@@ -109,15 +109,20 @@ namespace Search.GenericComponents
                         }
                     }
 
-                    _runningTask = LoadBatchAsync();
-                    await _runningTask;
+                    await LoadBatchAsync();
                 });
             }
 
-            async Task<TId> Next(int index, Task runningTask)
+            Task<TId> Next(int index, Task runningTask)
             {
-                await runningTask;
-                return loaded[index];
+                return runningTask.ContinueWith(t =>
+                {
+#warning lock, rly? there must be another way!
+                    lock (_syncObj)
+                    {
+                        return loaded[index];
+                    }
+                });
             }
 
             async Task ISearchResult<TId>.ForEach(Func<TId, Task<bool>> body)

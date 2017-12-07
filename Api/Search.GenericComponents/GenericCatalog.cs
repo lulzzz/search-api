@@ -28,7 +28,7 @@ namespace Search.GenericComponents
         {
             var limit = skip + take;
             var result = await _search.FindAsync(searchQuery, limit);
-            if (filters.Empty)
+            if (filters != null && filters.Empty)
             {
                 var ids = new List<TId>(take);
                 var i = 0;
