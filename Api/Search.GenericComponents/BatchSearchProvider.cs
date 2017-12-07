@@ -15,9 +15,12 @@ namespace Search.GenericComponents
         readonly Dictionary<string, ISearchResult<TId>> _cache = new Dictionary<string, ISearchResult<TId>>();
         readonly object _cacheSync = new object();
 
-        public BatchSearchProvider(IBatchSearcher<TId> searcher)
+        readonly int _hitLimit;
+
+        public BatchSearchProvider(IBatchSearcher<TId> searcher, int hitLimit)
         {
             _searcher = searcher;
+            _hitLimit = hitLimit;
         }
 
         public Task<ISearchResult<TId>> FindAsync(SearchQuery searchQuery, int fastFetchCount)
@@ -33,8 +36,8 @@ namespace Search.GenericComponents
                     result = _cache[key];
                 }
                 else
-                { 
-                    _cache[key] = result = new Result(_searcher.FindAsync(searchQuery), fastFetchCount);
+                {
+                    _cache[key] = result = new Result(_searcher.FindAsync(searchQuery), fastFetchCount, _hitLimit);
                 }
             }
 
@@ -63,20 +66,21 @@ namespace Search.GenericComponents
                     throw new InvalidOperationException("The result is not ready for synchronous consumption");
                 }
             }
-            
+
             /// <summary>
             /// mock for possible strategy in future
             /// </summary>
             /// <returns></returns>
-            int GetHitLimit() => int.MaxValue;
+            readonly int _hitLimit;
+            int GetHitLimit() => _hitLimit;
 
             readonly int _batchSize;
-            
             int GetBatchSize() => _batchSize;
             
-            public Result(Task<IBatchedSearchResult<TId>> searchTask, int batchSize)
+            public Result(Task<IBatchedSearchResult<TId>> searchTask, int batchSize, int hitLimit)
             {
                 _batchSize = batchSize;
+                _hitLimit = hitLimit;
                 _runningTask = Task.Run(async ()=>
                 {
                     var leftToFetch = GetHitLimit();

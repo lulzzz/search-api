@@ -17,7 +17,8 @@ namespace Search.RDKit.Postgres
             _connectionString = connectionString;
         }
 
-        readonly static string selectFromClause = $"SELECT " +
+
+        readonly static string fieldsClause =
             $"mr.{nameof(molecules_raw.idnumber)}, " +
             $"mr.{nameof(molecules_raw.smiles)}, " +
             $"mr.{nameof(molecules_raw.name)}, " +
@@ -28,10 +29,11 @@ namespace Search.RDKit.Postgres
             $"mr.{nameof(molecules_raw.rotb)}, " +
             $"mr.{nameof(molecules_raw.tpsa)}, " +
             $"mr.{nameof(molecules_raw.fsp3)}, " +
-            $"mr.{nameof(molecules_raw.hac)} " +
-            $"FROM {nameof(molecules_raw)} mr JOIN unnest(@IDs) ids on ids=mr.idnumber";
+            $"mr.{nameof(molecules_raw.hac)} ";
 
-        public async Task<IEnumerable<MoleculeData>> FilterAndEnrich(IEnumerable<string> ids, FilterQuery filters)
+        readonly static string selectFromClause = $"SELECT {fieldsClause} FROM {nameof(molecules_raw)} mr JOIN unnest(@IDs) ids on ids=mr.idnumber";
+
+        async Task<IEnumerable<MoleculeData>> IFilterEnricher<string, FilterQuery, MoleculeData>.FilterAndEnrich(IEnumerable<string> ids, FilterQuery filters)
         {
             using (var con = new NpgsqlConnection(_connectionString))
             {
@@ -71,6 +73,44 @@ namespace Search.RDKit.Postgres
                 }
 
                 return results;
+            }
+        }
+
+        readonly static string selectOneQuery = $"SELECT {fieldsClause} FROM {nameof(molecules_raw)} mr WHERE mr.{nameof(molecules_raw.idnumber)}=@{nameof(molecules_raw.idnumber)}";
+
+        async Task<MoleculeData> IFilterEnricher<string, FilterQuery, MoleculeData>.One(string id)
+        {
+            using (var con = new NpgsqlConnection(_connectionString))
+            {
+                var command = con.CreateCommand();
+                command.CommandText = selectOneQuery;
+
+                command.Parameters.Add(new NpgsqlParameter($"@{nameof(molecules_raw.idnumber)}", id));
+
+                await con.OpenAsync();
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    return new MoleculeData
+                    {
+                        IdNumber = id,
+                        Smiles = (string)reader[nameof(molecules_raw.smiles)],
+                        Name = (string)reader[nameof(molecules_raw.name)],
+                        Mw = (double)reader[nameof(molecules_raw.mw)],
+                        Logp = (double)reader[nameof(molecules_raw.logp)],
+                        Hba = (int)reader[nameof(molecules_raw.hba)],
+                        Hbd = (int)reader[nameof(molecules_raw.hbd)],
+                        Rotb = (int)reader[nameof(molecules_raw.rotb)],
+                        Tpsa = (double)reader[nameof(molecules_raw.tpsa)],
+                        Fsp3 = (double)reader[nameof(molecules_raw.fsp3)],
+                        Hac = (int)reader[nameof(molecules_raw.hac)],
+                    };
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
     }

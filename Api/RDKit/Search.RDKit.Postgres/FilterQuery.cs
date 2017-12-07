@@ -1,11 +1,12 @@
 ﻿using Search.Abstractions;
+using Search.GenericComponents;
 using Search.SqlCommon;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Search.RDKit.Postgres
 {
-    public class FilterQuery
+    public class FilterQuery : IFilterQuery
     {
         public Filter<double>? Mw { get; set; }
         public Filter<double>? Logp { get; set; }
@@ -15,6 +16,9 @@ namespace Search.RDKit.Postgres
         public Filter<double>? Tpsa { get; set; }
         public Filter<double>? Fsp3 { get; set; }
         public Filter<int>? Hac { get; set; }
+
+        bool IFilterQuery.Empty
+        => !(Mw.HasValue || Logp.HasValue || Hba.HasValue || Hbd.HasValue || Rotb.HasValue || Tpsa.HasValue || Fsp3.HasValue || Hac.HasValue);
 
 #warning should be reflection and should not be here
         public IEnumerable<NamedFilter> Enumerate()

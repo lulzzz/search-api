@@ -79,13 +79,14 @@ namespace Search.RDKit.Postgres
             public void Dispose()
             {
                 disposed = true;
+                var c = _t.Connection;
                 if (!_t.IsCompleted)
                 {
                     _t.Commit();
                 }
-                if(_t.Connection.State != ConnectionState.Closed)
+                if(c != null && c.State != ConnectionState.Closed)
                 {
-                    _t.Connection.Close();
+                    c.Close();
                 }
             }
         }
