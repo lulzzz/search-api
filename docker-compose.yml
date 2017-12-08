@@ -13,6 +13,7 @@ services:
     # - https_proxy='http://10.3.80.80:3128'
     - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=simsearch;Pooling=true;
+    - mongo_connection=mongodb://mongo:27017
     # network_mode: "host"
   rdkit-postgres:
     image: rdkit-postgres

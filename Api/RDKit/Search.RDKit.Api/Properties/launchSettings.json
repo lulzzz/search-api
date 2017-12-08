@@ -14,6 +14,7 @@
       "launchUrl": "/swagger",
       "environmentVariables": {
         "postgres_connection": "User ID=postgres;Host=localhost;Port=5432;Database=simsearch;Pooling=true;",
+        "mongo_connection": "mongodb://localhost:27017",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }

@@ -3,6 +3,7 @@ using Search.Abstractions.Batching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Search.GenericComponents
@@ -93,6 +94,7 @@ namespace Search.GenericComponents
                         lock (_syncObj)
                         {
                             loaded.AddRange(batch);
+                            Thread.MemoryBarrier();
                             leftToFetch -= batch.Length;
                             if (batch.Length < expectedSize || leftToFetch <= 0)
                             {
@@ -114,17 +116,12 @@ namespace Search.GenericComponents
             }
 
             Task<TId> Next(int index, Task runningTask)
-            {
-                return runningTask.ContinueWith(t =>
+            => runningTask.ContinueWith(t =>
                 {
-#warning lock, rly? there must be another way!
-                    lock (_syncObj)
-                    {
-                        return loaded[index];
-                    }
+                    Thread.MemoryBarrier();
+                    return loaded[index];
                 });
-            }
-
+        
             async Task ISearchResult<TId>.ForEach(Func<TId, Task<bool>> body)
             {
                 if (HasReadyResult)
@@ -163,7 +160,9 @@ namespace Search.GenericComponents
                     {
                         lock (_syncObj)
                         {
-                            ready = loaded.Skip(i).ToArray();
+                            var len = loaded.Count - i;
+                            ready = new TId[len];
+                            loaded.CopyTo(i, ready, 0, len);
                         }
 
                         foreach (var item in ready)
