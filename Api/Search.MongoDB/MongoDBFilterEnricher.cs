@@ -48,7 +48,8 @@ namespace Search.MongoDB
         async Task<IEnumerable<TData>> IFilterEnricher<TId, TFilterQuery, TData>.FilterAndEnrich(IEnumerable<TId> ids, TFilterQuery filters)
         {
             var filter = _filterBuilder.In(_idPropName, ids) & _filterCreator.Create(filters);
-            return await (await _mols.FindAsync(filter)).ToListAsync();
+            var res = await (await _mols.FindAsync(filter)).ToListAsync();
+            return res;
         }
 
         async Task<TData> IFilterEnricher<TId, TFilterQuery, TData>.One(TId id)

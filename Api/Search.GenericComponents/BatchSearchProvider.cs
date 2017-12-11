@@ -2,7 +2,6 @@
 using Search.Abstractions.Batching;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,10 +10,6 @@ namespace Search.GenericComponents
     public class BatchSearchProvider<TId> : ISearchProvider<TId>
     {
         readonly IBatchSearcher<TId> _searcher;
-
-#warning caching should be separated
-        readonly Dictionary<string, ISearchResult<TId>> _cache = new Dictionary<string, ISearchResult<TId>>();
-        readonly object _cacheSync = new object();
 
         readonly int _hitLimit;
 
@@ -25,25 +20,7 @@ namespace Search.GenericComponents
         }
 
         public Task<ISearchResult<TId>> FindAsync(SearchQuery searchQuery, int fastFetchCount)
-        {
-            ISearchResult<TId> result;
-
-            lock (_cacheSync)
-            {
-                var key = $"{searchQuery.Type}|{searchQuery.SearchText}";
-
-                if (_cache.ContainsKey(key))
-                {
-                    result = _cache[key];
-                }
-                else
-                {
-                    _cache[key] = result = new Result(_searcher.FindAsync(searchQuery), fastFetchCount, _hitLimit);
-                }
-            }
-
-            return Task.FromResult(result);
-        }
+        => Task.FromResult<ISearchResult<TId>>(new Result(_searcher.FindAsync(searchQuery), fastFetchCount, _hitLimit));
 
         private class Result : ISearchResult<TId>
         {
@@ -118,7 +95,6 @@ namespace Search.GenericComponents
             Task<TId> Next(int index, Task runningTask)
             => runningTask.ContinueWith(t =>
                 {
-                    Thread.MemoryBarrier();
                     return loaded[index];
                 });
         
@@ -203,6 +179,12 @@ namespace Search.GenericComponents
                         yield return Next(i, running);
                         i++;
                     } while (true);
+
+                    while (i < loaded.Count)
+                    {
+                        yield return Task.FromResult(loaded[i]);
+                        i++;
+                    }
                 }
             }
         }

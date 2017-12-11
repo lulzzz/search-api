@@ -31,9 +31,10 @@ namespace Search.RDKit.Api
 
             var catalog = 
                 new GenericCatalog<string, FilterQuery, MoleculeData>(
-                    new BatchSearchProvider<string>(
-                        new PostgresRDKitBatchSearcher(postgresConnectionString),
-                        10000), // can be passed from outside
+                    new InMemoryCachingSearchProvider<string>(
+                        new BatchSearchProvider<string>(
+                            new PostgresRDKitBatchSearcher(postgresConnectionString),
+                            10000)),
                     new MongoDBFilterEnricher<string, FilterQuery, MoleculeData>(mongoConnectionString, nameof(MoleculeData.IdNumber), new KekFilterCreator()));
 
             ApiCore.Api.BuildHost(catalog).Run();

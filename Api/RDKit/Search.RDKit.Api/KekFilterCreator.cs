@@ -1,11 +1,8 @@
 ﻿using Search.MongoDB;
 using Search.RDKit.Postgres;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MongoDB.Driver;
-using Search.Abstractions;
 using Search.SqlCommon;
 
 namespace Search.RDKit.Api

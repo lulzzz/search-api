@@ -26,8 +26,8 @@ namespace Search.GenericComponents
 
         public async Task<CatalogResult<TData>> FindAsync(SearchQuery searchQuery, TFilterQuery filters, int skip, int take)
         {
-            var limit = skip + take;
-            var result = await _search.FindAsync(searchQuery, limit);
+            var limitFixed = skip + take;
+            var result = await _search.FindAsync(searchQuery, limitFixed);
             if (filters != null && filters.Empty)
             {
                 var ids = new List<TId>(take);
@@ -55,23 +55,35 @@ namespace Search.GenericComponents
             {
                 var buffer = new List<TId>();
                 var results = new List<TData>();
-
+                var fetchCount = skip + take;
                 await result.ForEach(async item =>
                 {
                     buffer.Add(item);
-                    if (buffer.Count == limit)
+                    if (buffer.Count == fetchCount)
                     {
                         var filtered = (await _filterEnricher.FilterAndEnrich(buffer, filters)).ToList();
                         var filteredCount = filtered.Count;
                         results.AddRange(filtered);
-                        if (results.Count >= skip + take)
+                        buffer.Clear();
+                        if (results.Count >= limitFixed)
                         {
-                            buffer.Clear();
                             return false;
                         }
-                        limit = filteredCount != 0
-                            ? limit * limit / filteredCount - limit
-                            : limit * 10;
+                        fetchCount = filteredCount != 0
+                            ? fetchCount * fetchCount / filteredCount - fetchCount
+                            : fetchCount * 10;
+                        if (fetchCount < take)
+                        {
+                            fetchCount = take;
+                        }
+                        else
+                        {
+                            var max = limitFixed > 1000 ? limitFixed : 1000;
+                            if (fetchCount > max)
+                            {
+                                fetchCount = max;
+                            }
+                        }
                     }
                     return true;
                 });
