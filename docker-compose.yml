@@ -39,6 +39,8 @@ services:
       - "8080:8080"
     environment:
       - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
+      - ora_user=c$dcischem
+      - ora_pass=y3wxf1o(PLpt
       # - http_proxy=http://10.3.80.80:3128
       # - https_proxy=http://10.3.80.80:3128
   oplusd-search-api:

@@ -8,20 +8,13 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Search.Madfast.Api": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:54750/"
+    "commandName": "IISExpress",
+    "launchBrowser": true,
+    "launchUrl": "/swagger",
+    "environmentVariables": {
+      "madfast_url": "http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars",
+      "mongo_connection": "mongodb://localhost:27017",
+      "ASPNETCORE_ENVIRONMENT": "Development"
     }
   }
 }

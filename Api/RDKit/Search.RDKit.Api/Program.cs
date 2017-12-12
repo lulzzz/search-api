@@ -21,7 +21,7 @@ namespace Search.RDKit.Api
             }
 
             var mongoConnectionString = Environment.GetEnvironmentVariable("mongo_connection");
-            if (string.IsNullOrEmpty(postgresConnectionString))
+            if (string.IsNullOrEmpty(mongoConnectionString))
             {
                 Console.WriteLine("Connection string to MongoDB instance must be passed as environment variable 'mongo_connection'");
                 return 1;

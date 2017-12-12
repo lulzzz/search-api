@@ -11,7 +11,9 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "search.javaoplusd.Api",
             "env": {
-                "ora_connection": "jdbc:oracle:thin:@10.3.80.181:1521:chemspace"
+                "ora_connection": "jdbc:oracle:thin:@10.3.80.181:1521:chemspace",
+                "ora_user": "c$dcischem",
+                "ora_pass": "y3wxf1o(PLpt"
             }
         }
     ]

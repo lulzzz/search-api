@@ -15,7 +15,6 @@ namespace Mongo.Bootstrapper
         public string IdNumber { get; set; }
 
         public string Smiles { get; set; }
-        public string Name { get; set; }
 
         public double Mw { get; set; }
         public double Logp { get; set; }
@@ -48,45 +47,67 @@ namespace Mongo.Bootstrapper
             }
             db.CreateCollection("mols");
             var col = db.GetCollection<MoleculeData>("mols");
-            using (StreamReader @in = new StreamReader(@"D:\linux_share\Bases\UORSY.txt"))
+            using (StreamReader @in = new StreamReader(@"D:\rdb_all_337M.smi"))
             {
-                @in.ReadLine();
-                const int batchSize = 50000;
+                const int batchSize = 5000000;
                 var batch = new List<MoleculeData>(batchSize);
-                var loadedIDs = new HashSet<string>();
                 var counter = 0;
+                //for (int i = 0; i < 203000000; i++)
+                //{
+                //    @in.ReadLine();
+                //}
+                var lineNum = 0;
                 while (!@in.EndOfStream)
                 {
+                    lineNum++;
                     var line = @in.ReadLine().Split('\t');
-                    if (loadedIDs.Add(line[1]))
+                    //if (loadedIDs.Add(line[1]))
+                    //{
+                    try
                     {
                         var md = new MoleculeData
                         {
                             Smiles = line[0],
                             IdNumber = line[1],
-                            Name = line[2],
-                            Mw = double.Parse(line[3]),
-                            Logp = double.Parse(line[4]),
-                            Hba = int.Parse(line[5]),
-                            Hbd = int.Parse(line[6]),
-                            Rotb = int.Parse(line[7]),
-                            Tpsa = double.Parse(line[8]),
+                            Mw = double.Parse(line[2]),
+                            Logp = double.Parse(line[3]),
+                            Hba = int.Parse(line[4]),
+                            Hbd = int.Parse(line[5]),
+                            Rotb = int.Parse(line[6]),
+                            Tpsa = double.Parse(line[7]),
                             Fsp3 = double.Parse(line[9]),
-                            Hac = int.Parse(line[10])
+                            Hac = int.Parse(line[8])
                         };
                         batch.Add(md);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Console.WriteLine("---------------------------------------------------------");
+                        Console.WriteLine($"in line {lineNum}");
+                    }
+                        
                         counter++;
                         if (counter == batchSize)
                         {
-                            col.InsertMany(batch);
+                            try
+                            {
+                                col.InsertMany(batch);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                Console.WriteLine("---------------------------------------------------------");
+                                Console.WriteLine($"failed on batch before line line {lineNum}");
+                            }
                             batch.Clear();
                             counter = 0;
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{line[1]} is duplicate");
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine($"{line[1]} is duplicate");
+                    //}
                 }
                 if(batch.Count != 0)
                 {

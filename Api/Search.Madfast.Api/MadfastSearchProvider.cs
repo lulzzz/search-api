@@ -1,34 +1,51 @@
 ﻿using Search.Abstractions;
-using Search.Abstractions.Batching;
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Search.GenericComponents
+namespace Search.Madfast.Api
 {
-    public class BatchSearchProvider<TId> : ISearchProvider<TId>
+    public class MadfastSearchProvider : ISearchProvider<string>
     {
-        readonly IBatchSearcher<TId> _searcher;
-
+        readonly static HttpClient _httpClient = new HttpClient();
+        readonly string _url;
         readonly int _hitLimit;
+        readonly double _maxDissimilarity;
 
-        public BatchSearchProvider(IBatchSearcher<TId> searcher, int hitLimit)
+        public MadfastSearchProvider(string url, int hitLimit, double maxDissimilarity)
         {
-            _searcher = searcher;
+            _url = url;
             _hitLimit = hitLimit;
+            _maxDissimilarity = maxDissimilarity;
         }
 
-        public Task<ISearchResult<TId>> FindAsync(SearchQuery searchQuery, int fastFetchCount)
-        => Task.FromResult<ISearchResult<TId>>(new Result(_searcher.FindAsync(searchQuery), fastFetchCount, _hitLimit));
-
-        private class Result : ISearchResult<TId>
+        Task<ISearchResult<string>> ISearchProvider<string>.FindAsync(SearchQuery searchQuery, int fastFetchCount)
         {
+            switch (searchQuery.Type)
+            {
+                case SearchType.Similar:
+                    return Task.FromResult<ISearchResult<string>>(new Result(this, fastFetchCount, _hitLimit, _maxDissimilarity, searchQuery.SearchText));
+                case SearchType.Exact:
+                case SearchType.Substructure:
+                case SearchType.Superstructure:
+                case SearchType.Smart:
+                    throw new NotImplementedException();
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        class Result : ISearchResult<string>
+        {
+            static readonly string[] empty = new string[0];
+
             volatile Task _runningTask;
-            readonly List<TId> loaded = new List<TId>();
+            readonly List<string> loaded = new List<string>();
             readonly object _syncObj = new object();
 
-            public IEnumerable<TId> ReadyResult
+            public IEnumerable<string> ReadyResult
             {
                 get
                 {
@@ -52,51 +69,58 @@ namespace Search.GenericComponents
 
             readonly int _batchSize;
             int GetBatchSize() => _batchSize;
-            
-            public Result(Task<IBatchedSearchResult<TId>> searchTask, int batchSize, int hitLimit)
-            {
-                _batchSize = batchSize;
-                _hitLimit = hitLimit;
-                _runningTask = Task.Run(async ()=>
-                {
-                    var leftToFetch = GetHitLimit();
-                    var r = await searchTask;
-#warning lacks proper error handling
-                    async Task LoadBatchAsync()
-                    {
-                        var expectedSize = GetBatchSize();
-                        var batch = await r.Next(expectedSize).ConfigureAwait(false);
-                        lock (_syncObj)
-                        {
-                            loaded.AddRange(batch);
-                            Thread.MemoryBarrier();
-                            leftToFetch -= batch.Length;
-                            if (batch.Length < expectedSize || leftToFetch <= 0)
-                            {
-                                _runningTask = null;
-                                if (r is IDisposable disposable)
-                                {
-                                    disposable.Dispose();
-                                }
-                            }
-                            else
-                            {
-                                _runningTask = LoadBatchAsync();
-                            }
-                        }
-                    }
 
-                    await LoadBatchAsync();
+            public Result(MadfastSearchProvider creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
+            {
+                _hitLimit = hitLimit;
+                _runningTask = Task.Run(async () =>
+                {
+                    var r = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                            { "max-count", fastFetch.ToString() },
+                            { "query", query },
+
+                    }));
+
+
+                    dynamic a = r.Content;
+                    var res = ((IEnumerable<dynamic>)a.targets).Select(t => (string)t.targetid).ToList();
+
+                    var loadNext = res.Count > fastFetch
+                        ? Task.Run(async () =>
+                            {
+                                var r1 = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
+                                {
+                                        { "max-count", hitLimit.ToString() },
+                                        { "query", query }
+                                }));
+                                dynamic a1 = r1.Content;
+                                IEnumerable<string> res1 = ((IEnumerable<dynamic>)a.targets).Select(t => (string)t.targetid);
+                                lock (_syncObj)
+                                {
+                                    loaded.Clear();
+                                    loaded.AddRange(res);
+                                    _runningTask = null;
+                                }
+                            })
+                         : null; 
+
+                    lock (_syncObj)
+                    {
+                        loaded.AddRange(res);
+                        _runningTask = loadNext;
+                    }
                 });
+
             }
 
-            Task<TId> Next(int index, Task runningTask)
+            Task<string> Next(int index, Task runningTask)
             => runningTask.ContinueWith(t =>
-                {
-                    return loaded[index];
-                });
-        
-            async Task ISearchResult<TId>.ForEach(Func<TId, Task<bool>> body)
+               {
+                   return loaded[index];
+               });
+
+            async Task ISearchResult<string>.ForEach(Func<string, Task<bool>> body)
             {
                 if (_runningTask == null)
                 {
@@ -123,19 +147,19 @@ namespace Search.GenericComponents
                 }
             }
 
-            public IEnumerable<Task<TId>> AsyncResult
+            public IEnumerable<Task<string>> AsyncResult
             {
                 get
                 {
                     int i = 0; // count of returned elements-1
-                    TId[] ready;
+                    string[] ready;
 
                     do
                     {
                         lock (_syncObj)
                         {
                             var len = loaded.Count - i;
-                            ready = new TId[len];
+                            ready = new string[len];
                             loaded.CopyTo(i, ready, 0, len);
                         }
 
@@ -155,7 +179,7 @@ namespace Search.GenericComponents
                             }
                         }
 
-                        if(running != null) // if running task was remembered in the lock, then no ready elements left and we yield awaiting task
+                        if (running != null) // if running task was remembered in the lock, then no ready elements left and we yield awaiting task
                         {
                             yield return Next(i, running);
                             i++;
