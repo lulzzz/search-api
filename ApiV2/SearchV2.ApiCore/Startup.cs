@@ -18,19 +18,12 @@ namespace SearchV2.ApiCore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var catalogServiceTypeArguments = services
-                .FirstOrDefault(s => s.ServiceType.IsConstructedGenericType && s.ServiceType.GetGenericTypeDefinition() == typeof(ICatalog<,,>))
-                ?.ServiceType.GenericTypeArguments;
 
             services.AddCors();
 
             services
                 .AddMvcCore()
-                .AddApplicationPart(typeof(Startup).Assembly)
-                .ConfigureApplicationPartManager(apm =>
-                {
-                    apm.FeatureProviders.Add(new MoleculesControllerFeatureProvider(catalogServiceTypeArguments[0], catalogServiceTypeArguments[1], catalogServiceTypeArguments[2]));
-                })
+                .AddSearchFeature(services)
                 .AddApiExplorer()
                 .AddDataAnnotations()
                 .AddJsonOptions(options =>
