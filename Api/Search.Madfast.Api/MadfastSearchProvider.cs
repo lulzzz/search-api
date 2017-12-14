@@ -83,32 +83,30 @@ namespace Search.Madfast.Api
                     }));
 
 
-                    dynamic a = r.Content;
+                    dynamic a = Newtonsoft.Json.JsonConvert.DeserializeObject(await r.Content.ReadAsStringAsync());
                     var res = ((IEnumerable<dynamic>)a.targets).Select(t => (string)t.targetid).ToList();
-
-                    var loadNext = res.Count > fastFetch
-                        ? Task.Run(async () =>
-                            {
-                                var r1 = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
-                                {
-                                        { "max-count", hitLimit.ToString() },
-                                        { "query", query }
-                                }));
-                                dynamic a1 = r1.Content;
-                                IEnumerable<string> res1 = ((IEnumerable<dynamic>)a.targets).Select(t => (string)t.targetid);
-                                lock (_syncObj)
-                                {
-                                    loaded.Clear();
-                                    loaded.AddRange(res);
-                                    _runningTask = null;
-                                }
-                            })
-                         : null; 
 
                     lock (_syncObj)
                     {
                         loaded.AddRange(res);
-                        _runningTask = loadNext;
+                        _runningTask = res.Count < hitLimit
+                            ? Task.Run(async () =>
+                                {
+                                    var r1 = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
+                                        {
+                                                { "max-count", hitLimit.ToString() },
+                                                { "query", query }
+                                        }));
+                                    dynamic a1 = Newtonsoft.Json.JsonConvert.DeserializeObject(await r1.Content.ReadAsStringAsync()); //await r1.Content.ReadAsStreamAsync();
+                                    IEnumerable<string> res1 = ((IEnumerable<dynamic>)a1.targets).Select(t => (string)t.targetid);
+                                    lock (_syncObj)
+                                    {
+                                        loaded.Clear();
+                                        loaded.AddRange(res1);
+                                        _runningTask = null;
+                                    }
+                                })
+                            : null;
                     }
                 });
 
@@ -201,7 +199,7 @@ namespace Search.Madfast.Api
                         yield return Next(i, running);
                         i++;
                     } while (true);
-
+                    
                     while (i < loaded.Count)
                     {
                         yield return Task.FromResult(loaded[i]);

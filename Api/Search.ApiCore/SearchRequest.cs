@@ -21,8 +21,8 @@ namespace Search.ApiCore
         [FromQuery, Required]
         public string Text { get; set; }
 
-        [FromQuery]
-        public SearchType Type { get; set; } = SearchType.Smart;
+        [FromRoute]
+        public SearchType SearchType { get; set; } = SearchType.Smart;
 
         [FromQuery]
         public int? PageSize { get; set; } = 12;

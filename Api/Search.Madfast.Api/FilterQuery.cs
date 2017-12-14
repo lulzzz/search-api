@@ -54,11 +54,11 @@ namespace Search.Madfast
                 {
                     if (val.Min != null)
                     {
-                        yield return _builder.Gt(val.Name, val.Min);
+                        yield return _builder.Gte(val.Name, val.Min);
                     }
                     if (val.Max != null)
                     {
-                        yield return _builder.Lt(val.Name, val.Max);
+                        yield return _builder.Lte(val.Name, val.Max);
                     }
                 }
             }

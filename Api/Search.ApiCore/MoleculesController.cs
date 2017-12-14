@@ -19,11 +19,11 @@ namespace Search.ApiCore
 
         
         [HttpPost]
-        [Route("search")]
+        [Route("search/{searchType}")]
         public async Task<object> Search(SearchRequest<TFilterQuery> request)
         {
             var mols = await _catalog
-                .FindAsync(new SearchQuery { SearchText = request.Text, Type = request.Type }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value);
+                .FindAsync(new SearchQuery { SearchText = request.Text, Type = request.SearchType }, request.Filters, skip: (request.PageNumber.Value - 1) * request.PageSize.Value, take: request.PageSize.Value);
 
             return new { Molecules = mols.Data.ToList() };
         }

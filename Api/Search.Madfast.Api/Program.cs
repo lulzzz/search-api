@@ -37,8 +37,10 @@ namespace Search.Madfast.Api
 
             var catalog =
                 new GenericCatalog<string, FilterQuery, MoleculeData>(
-                    new InMemoryCachingSearchProvider<string>(
-                        new MadfastSearchProvider(madfastUrl, 1000, 0.3)),
+                    //new InMemoryCachingSearchProvider<string>(
+                        new MadfastSearchProvider(madfastUrl, 1000, 0.3)
+                        //)
+                        ,
                     new MongoDBFilterEnricher<string, FilterQuery, MoleculeData>(mongoConnectionString, nameof(MoleculeData.IdNumber), new FilterQuery.Creator()));
 
             ApiCore.Api.BuildHost(catalog).Run();
