@@ -63,4 +63,8 @@ services:
       - "27017:27017"
     volumes:
       - "~/mongo-data:/data/db"
-
+  mongo-bootstrap:
+    image: mongo-bootstrap
+    build: 
+      context: ./Docker.Rdkit
+      dockerfile: dockerfile
