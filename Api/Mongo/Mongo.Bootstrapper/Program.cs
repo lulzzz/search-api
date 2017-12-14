@@ -39,7 +39,8 @@ namespace Mongo.Bootstrapper
 
             cp.AddClassMapConvention("shit", bcm => bcm.MapIdProperty(nameof(MoleculeData.IdNumber)));
             ConventionRegistry.Register("def", cp, t => typeof(MoleculeData) == t);
-            MongoClient client = new MongoClient("mongodb://search_350m:a87s9h2uf3F2@mongo:27017/search_350m");
+            //new MongoClientSettings { Credentials = new[] { new MongoCredential( } }
+            MongoClient client = new MongoClient( "mongodb://10.3.28.43:27017");
             var db = client.GetDatabase("search_350m");
             var filter = new BsonDocument("name", "mols");
 
@@ -80,26 +81,24 @@ namespace Mongo.Bootstrapper
                         var fsp3 = doubleTryParse(lineItems[9]);
                         var hac = intTryParse(lineItems[8]);
 
-                        if (!(mw.HasValue && logp.HasValue && hba.HasValue && hbd.HasValue && rotb.HasValue && tpsa.HasValue && fsp3.HasValue && hac.HasValue))
+                        var md = new MoleculeData
                         {
-                            var md = new MoleculeData
-                            {
-                                Smiles = lineItems[0],
-                                IdNumber = lineItems[1],
-                                Mw = mw.Value,
-                                Logp = logp.Value,
-                                Hba = hba,
-                                Hbd = hbd,
-                                Rotb = rotb,
-                                Tpsa = tpsa,
-                                Fsp3 = fsp3.Value,
-                                Hac = hac.Value
-                            };
+                            Smiles = lineItems[0],
+                            IdNumber = lineItems[1],
+                            Mw = mw.Value,
+                            Logp = logp.Value,
+                            Hba = hba,
+                            Hbd = hbd,
+                            Rotb = rotb,
+                            Tpsa = tpsa,
+                            Fsp3 = fsp3.Value,
+                            Hac = hac.Value
+                        };
 
-                            batch.Add(md);
-                            counter++;
-                        }
-                        else
+                        batch.Add(md);
+                        counter++;
+
+                        if (!(mw.HasValue && logp.HasValue && hba.HasValue && hbd.HasValue && rotb.HasValue && tpsa.HasValue && fsp3.HasValue && hac.HasValue))
                         {
                             Console.WriteLine($"bad line {lineNum}: {line}");
                         }

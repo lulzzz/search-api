@@ -13,7 +13,7 @@ services:
     # - https_proxy='http://10.3.80.80:3128'
     - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=simsearch;Pooling=true;
-    - mongo_connection=mongodb://search_350m:a87s9h2uf3F2@mongo:27017
+    - mongo_connection=mongodb://mongo:27017
     # network_mode: "host"
   rdkit-postgres:
     image: rdkit-postgres
@@ -58,7 +58,7 @@ services:
   mongo:
     image: mongo:3.6
     container_name: mongo
-    command: mongod --auth
+    # command: mongod --auth
     ports: 
       - "27017:27017"
     volumes:
@@ -70,3 +70,5 @@ services:
       dockerfile: ./Mongo/bootstrap.dockerfile
     volumes:
       - "~/kos/m337:/data"
+    environment:
+      - mongo_connection=mongodb://mongo:27017
