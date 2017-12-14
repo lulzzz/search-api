@@ -51,7 +51,7 @@ namespace Mongo.Bootstrapper
             db.CreateCollection("mols");
             var col = db.GetCollection<MoleculeData>("mols");
             using (StreamWriter @out = new StreamWriter("out.txt"))
-            using (StreamReader @in = new StreamReader(@"D:\rdb_all_337M.smi"))
+            using (StreamReader @in = new StreamReader(@"/data/rdb_all_337M.smi"))
             {
                 const int batchSize = 5000000;
                 var batch = new List<MoleculeData>(batchSize);
@@ -117,6 +117,7 @@ namespace Mongo.Bootstrapper
                         try
                         {
                             col.InsertMany(batch);
+                            Console.WriteLine($"loaded {lineNum} records");
                         }
                         catch (Exception e)
                         {

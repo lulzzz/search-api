@@ -68,3 +68,5 @@ services:
     build: 
       context: ./Docker.Rdkit
       dockerfile: dockerfile
+    volumes:
+      - "~/kos/m337:/data"
