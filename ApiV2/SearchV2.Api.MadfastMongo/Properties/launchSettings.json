@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:54749/",
+      "applicationUrl": "http://localhost:59716/",
       "sslPort": 0
     }
   },
@@ -11,10 +11,11 @@
     "Local": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "/swagger",
+      "launchUrl": "swagger",
       "environmentVariables": {
         "madfast_url": "http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars",
         "mongo_connection": "mongodb://10.3.28.43:27017",
+        "mongo_dbname": "search_350m",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }

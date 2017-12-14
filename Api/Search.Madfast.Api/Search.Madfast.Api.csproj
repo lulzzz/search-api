@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Mongo\Search.MongoDB\Search.MongoDB.csproj" />
     <ProjectReference Include="..\Search.Abstractions\Search.Abstractions.csproj" />
     <ProjectReference Include="..\Search.ApiCore\Search.ApiCore.csproj" />
     <ProjectReference Include="..\Search.GenericComponents\Search.GenericComponents.csproj" />

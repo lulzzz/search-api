@@ -39,7 +39,7 @@ namespace Search.MongoDB
 
             _idPropName = idPropName;
             _client = new MongoClient(connectionString);
-            var db = _client.GetDatabase("simsearch");
+            var db = _client.GetDatabase("search_350m");
             _mols = db.GetCollection<TData>("mols");
 
             _filterCreator = filterCreator;

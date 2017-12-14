@@ -35,7 +35,7 @@ namespace Search.RDKit.Api
                         new BatchSearchProvider<string>(
                             new PostgresRDKitBatchSearcher(postgresConnectionString),
                             10000)),
-                    new MongoDBFilterEnricher<string, FilterQuery, MoleculeData>(mongoConnectionString, nameof(MoleculeData.IdNumber), new KekFilterCreator()));
+                    new MongoDBFilterEnricher<string, FilterQuery, MoleculeData>(mongoConnectionString, nameof(MoleculeData.IdNumber), new FilterQuery.Creator()));
 
             ApiCore.Api.BuildHost(catalog).Run();
             return 0;
