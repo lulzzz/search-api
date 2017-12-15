@@ -17,14 +17,14 @@ namespace SearchV2.Api.MadfastMongo
         public string Ref { get; set; }
         public double Similarity { get; set; }
     }
-    public class MadfastSimilaritySearchProvider : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
+    public class MadfastSimilaritySearchService : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
     {
         readonly static HttpClient _httpClient = new HttpClient();
         readonly string _url;
         readonly int _hitLimit;
         readonly double _maxDissimilarity;
 
-        public MadfastSimilaritySearchProvider(string url, int hitLimit, double maxDissimilarity)
+        public MadfastSimilaritySearchService(string url, int hitLimit, double maxDissimilarity)
         {
             _url = url;
             _hitLimit = hitLimit;
@@ -69,7 +69,7 @@ namespace SearchV2.Api.MadfastMongo
             readonly int _batchSize;
             int GetBatchSize() => _batchSize;
 
-            public Result(MadfastSimilaritySearchProvider creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
+            public Result(MadfastSimilaritySearchService creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
             {
                 _hitLimit = hitLimit;
                 _runningTask = Task.Run(async () =>

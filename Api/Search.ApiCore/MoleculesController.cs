@@ -18,8 +18,7 @@ namespace Search.ApiCore
         }
 
         
-        [HttpPost]
-        [Route("search/{searchType}")]
+        [HttpPost("search/{searchType}")]
         public async Task<object> Search(SearchRequest<TFilterQuery> request)
         {
             var mols = await _catalog
@@ -28,8 +27,7 @@ namespace Search.ApiCore
             return new { Molecules = mols.Data.ToList() };
         }
         
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("{id}")]
         public Task<TData> One([FromRoute]TId id) => _catalog.ItemAsync(id);
     }
 }
