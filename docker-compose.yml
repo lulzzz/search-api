@@ -72,3 +72,15 @@ services:
       - "~/kos/m337:/data"
     environment:
       - mongo_connection=mongodb://mongo:27017
+  v2-madfast-mongo-api:
+    image: v2-madfast-mongo-api
+    build:
+      context: ./ApiV2
+      dockerfile: ./SearchV2.Api.MadfastMongo/Dockerfile
+    ports:
+    - "5000:5000"
+    environment:
+    - ASPNETCORE_URLS=http://+:5000
+    - madfast_url=http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
+    - mongo_connection=mongodb://mongo:27017
+    - mongo_dbname=search_350m

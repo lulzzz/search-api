@@ -49,8 +49,8 @@ namespace SearchV2.ApiCore
                     typeof(Task<object>),
                     new[] { requestType });
                 
-                var paramBuilder = actionBuilder.DefineParameter(1, ParameterAttributes.In, "request");
-
+                actionBuilder.DefineParameter(1, ParameterAttributes.In, "request");
+                
                 actionBuilder.SetCustomAttribute(
                     new CustomAttributeBuilder(
                         typeof(HttpPostAttribute).GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),

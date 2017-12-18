@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.ApiCore", "SearchV2.ApiCore\SearchV2.ApiCore.csproj", "{84CA3D8D-8154-4ACD-B45B-859BA80A035D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.ApiCore", "SearchV2.ApiCore\SearchV2.ApiCore.csproj", "{84CA3D8D-8154-4ACD-B45B-859BA80A035D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.Abstractions", "SearchV2.Abstractions\SearchV2.Abstractions.csproj", "{5AE9AA45-5E3D-4CDA-B8E9-7F75DBC9826A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Abstractions", "SearchV2.Abstractions\SearchV2.Abstractions.csproj", "{5AE9AA45-5E3D-4CDA-B8E9-7F75DBC9826A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.Api.MadfastMongo", "SearchV2.Api.MadfastMongo\SearchV2.Api.MadfastMongo.csproj", "{41623BD7-691E-425B-B107-A251D57173F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Api.MadfastMongo", "SearchV2.Api.MadfastMongo\SearchV2.Api.MadfastMongo.csproj", "{41623BD7-691E-425B-B107-A251D57173F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
