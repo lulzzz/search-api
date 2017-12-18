@@ -1,4 +1,5 @@
-﻿using SearchV2.Abstractions;
+﻿using Newtonsoft.Json;
+using SearchV2.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,23 +18,33 @@ namespace SearchV2.Api.MadfastMongo
         public string Ref { get; set; }
         public double Similarity { get; set; }
     }
+
+    class MadfastQueryResult
+    {
+        public IEnumerable<Target> Targets { get; set; }
+
+        public class Target
+        {
+            public double Dissimilarity { get; set; }
+            public string Targetid { get; set; }
+        }
+    }
+
     public class MadfastSimilaritySearchService : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
     {
         readonly static HttpClient _httpClient = new HttpClient();
         readonly string _url;
         readonly int _hitLimit;
-        readonly double _maxDissimilarity;
 
-        public MadfastSimilaritySearchService(string url, int hitLimit, double maxDissimilarity)
+        public MadfastSimilaritySearchService(string url, int hitLimit)
         {
             _url = url;
             _hitLimit = hitLimit;
-            _maxDissimilarity = maxDissimilarity;
         }
 
         Task<ISearchResult<MadfastResultItem>> ISearchService<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<ISearchResult<MadfastResultItem>>(new Result(this, fastFetchCount, _hitLimit, query.SimilarityThreshold, query.Query));
         }
 
         class Result : ISearchResult<MadfastResultItem>
@@ -66,9 +77,6 @@ namespace SearchV2.Api.MadfastMongo
             readonly int _hitLimit;
             int GetHitLimit() => _hitLimit;
 
-            readonly int _batchSize;
-            int GetBatchSize() => _batchSize;
-
             public Result(MadfastSimilaritySearchService creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
             {
                 _hitLimit = hitLimit;
@@ -81,9 +89,11 @@ namespace SearchV2.Api.MadfastMongo
 
                     }));
 
-
-                    dynamic a = Newtonsoft.Json.JsonConvert.DeserializeObject(await r.Content.ReadAsStringAsync());
-                    var res = ((IEnumerable<dynamic>)a.targets).Select(t => new MadfastResultItem { Ref = t.targetid, Similarity = 1.0 - t.dissimilarity }).ToList();
+                    var res = JsonConvert
+                        .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
+                        .Targets
+                        .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
+                        .ToList();
 
                     lock (_syncObj)
                     {
@@ -96,8 +106,11 @@ namespace SearchV2.Api.MadfastMongo
                                                 { "max-count", hitLimit.ToString() },
                                                 { "query", query }
                                         }));
-                                dynamic a1 = Newtonsoft.Json.JsonConvert.DeserializeObject(await r1.Content.ReadAsStringAsync()); //await r1.Content.ReadAsStreamAsync();
-                                IEnumerable<MadfastResultItem> res1 = ((IEnumerable<dynamic>)a1.targets).Select(t => new MadfastResultItem { Ref = t.targetid, Similarity = 1.0 - t.dissimilarity });
+                                var res1 = JsonConvert
+                                    .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
+                                    .Targets
+                                    .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
+                                    .ToList();
                                 lock (_syncObj)
                                 {
                                     loaded.Clear();
@@ -114,7 +127,10 @@ namespace SearchV2.Api.MadfastMongo
             Task<MadfastResultItem> Next(int index, Task runningTask)
                 => runningTask.ContinueWith(t =>
                 {
-                    return loaded[index];
+                    lock (_syncObj)
+                    {
+                        return loaded[index];
+                    }
                 });
 
             async Task ISearchResult<MadfastResultItem>.ForEachAsync(Func<MadfastResultItem, Task<bool>> body)

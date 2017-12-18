@@ -41,8 +41,8 @@ namespace SearchV2.Api.MadfastMongo
             //var searchProvider = new PostgresRDKitCatalog(postgresConnectionString);
 
             ApiCore.Api.BuildHost(
-                new MongoCatalog<string, FilterQuery, MoleculeData>(mongoConnectionString, mongoDbName, null),
-                ApiCore.Api.RegisterSearch("sim", new MadfastSimilaritySearchService(madfastUrl, 1000, 0.5))
+                new MongoCatalog<string, FilterQuery, MoleculeData>(mongoConnectionString, mongoDbName, new FilterQuery.Creator()),
+                ApiCore.Api.RegisterSearch("sim", new MadfastSimilaritySearchService(madfastUrl, 1000))
                 ).Run();
             return 0;
         }

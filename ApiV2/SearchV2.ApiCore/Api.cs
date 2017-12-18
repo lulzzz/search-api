@@ -19,9 +19,8 @@ namespace SearchV2.ApiCore
             .CaptureStartupErrors(true)
             .ConfigureServices(sc =>
             {
-                //sc.Add(new ServiceDescriptor(typeof(ISearchStrategy<,>), typeof(DefaultSearchStrategy<,,,,>), ServiceLifetime.Singleton));
-
                 sc.Add(new ServiceDescriptor(typeof(ICatalogDb<TId, TFilterQuery, TData>), catalog));
+
                 foreach (var sp in searches.Select(sr => new ServiceDescriptor(sr._type, sr._searchProvider)))
                 {
                     sc.Add(sp);
@@ -29,8 +28,8 @@ namespace SearchV2.ApiCore
                     var tid = sp.ServiceType.GetGenericArguments()[0];
                     var tSearchResult = sp.ServiceType.GetGenericArguments()[2];
                     sc.Add(new ServiceDescriptor(
-                        typeof(ISearchStrategy<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery)), 
-                        typeof(DefaultSearchStrategy<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData)), 
+                        typeof(ISearchStrategy<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery)),
+                        typeof(DefaultSearchStrategy<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData)),
                         ServiceLifetime.Singleton));
                 }
                 sc.Add(new ServiceDescriptor(typeof(ControllerDescriptor), new ControllerDescriptor { ControllerType = ControllerBuilder.CreateControllerClass(catalog, searches) }));

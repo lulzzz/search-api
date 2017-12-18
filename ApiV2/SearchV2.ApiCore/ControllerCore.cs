@@ -2,6 +2,7 @@
 using SearchV2.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -14,34 +15,21 @@ namespace SearchV2.ApiCore
     [MoleculesControllerNameConvention]
     public abstract class ControllerCore<TId, TFilterQuery, TData> where TData : IWithReference<TId>
     {
-        internal static string CatPropName => nameof(ControllerCore<TId, TFilterQuery, TData>._catalogDb);
-
         protected ICatalogDb<TId, TFilterQuery, TData> _catalogDb;
 
         [HttpGet]
         [Route("{id}")]
         public Task<TData> One([FromRoute]TId id) => _catalogDb.OneAsync(id);
 
-        // sample
-
-        //public ControllerCore(ISearchStrategy<TSearchQuery, TFilterQuery> _searchStrategy)
-        //{
-        //    searchStrategy = _searchStrategy;
-        //}
-
-        //private ISearchStrategy<TSearchQuery, TFilterQuery> searchStrategy;
-
-        //[HttpGet]
-        //[Route("search/{searchType}")]
-        //public Task<TData> Find(SearchRequest<TSearchQuery, TFilterQuery> request) 
-        //    => 
-        //    this.searchStrategy
-        //    .FindAsync(
-        //        request.Query.Search, 
-        //        request.Query.Filters, 
-        //        request.PageNumber, 
-        //        request.PageSize);
-
+        internal static string CatPropName => nameof(_catalogDb);
+        internal static string ActionImplementationName => nameof(FindInternal);
+        
+        public static Task<object> FindInternal<TSearchQuery>(ISearchStrategy<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
+            => s.FindAsync(
+                    request.Query.Search,
+                    request.Query.Filters,
+                    request.PageNumber.Value,
+                    request.PageSize.Value);
     }
 
     public class SearchRequest<TSearchQuery, TFilterQuery>
@@ -53,12 +41,12 @@ namespace SearchV2.ApiCore
         }
 
         [FromQuery]
-        public int PageSize { get; set; } = 12;
+        public int? PageSize { get; set; } = 12;
 
         [FromQuery]
-        public int PageNumber { get; set; } = 1;
+        public int? PageNumber { get; set; } = 1;
 
-        [FromBody]
+        [FromBody, Required]
         public Body Query { get; set; }
     }
 
@@ -66,8 +54,7 @@ namespace SearchV2.ApiCore
     {
         static readonly ModuleBuilder mb = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("SearchV2.ApiCore.Dynamic"), AssemblyBuilderAccess.Run)
             .DefineDynamicModule("MainModule");
-
-
+        
         static TypeBuilder CreateTypeBuilder(this ModuleBuilder moduleBuilder, string typename)
             => moduleBuilder.DefineType(typename,
                 TypeAttributes.Public |
@@ -79,7 +66,6 @@ namespace SearchV2.ApiCore
                 TypeAttributes.Sealed,
                 null);
         
-
         public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params SearchRegistration<TId>[] searches) where TData : IWithReference<TId>
         {
             var type = mb.CreateTypeBuilder("MoleculesController");
@@ -102,28 +88,24 @@ namespace SearchV2.ApiCore
                 var actionBuilder = type.DefineMethod(
                     "Find" + i, 
                     MethodAttributes.Public, 
-                    CallingConventions.HasThis, 
+                    CallingConventions.HasThis,
                     typeof(Task<object>),
                     new[] { requestType });
+                
+                var paramBuilder = actionBuilder.DefineParameter(1, ParameterAttributes.In, "request");
+
                 actionBuilder.SetCustomAttribute(
                     new CustomAttributeBuilder(
                         typeof(HttpPostAttribute).GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),
                         new object[] { $"search/{item._routeSuffix}" }));
 
+                var impl = baseType.GetMethod(ControllerCore<TId, TFilterQuery, TData>.ActionImplementationName).MakeGenericMethod(tSearchQuery);
+
                 var aIL = actionBuilder.GetILGenerator();
                 aIL.Emit(OpCodes.Ldarg_0);
                 aIL.Emit(OpCodes.Ldfld, strategyField);
                 aIL.Emit(OpCodes.Ldarg_1);
-                aIL.Emit(OpCodes.Call, requestType.GetProperty("Query").GetMethod);
-                aIL.Emit(OpCodes.Call, requestBodyType.GetProperty("Search").GetMethod);
-                aIL.Emit(OpCodes.Ldarg_1);
-                aIL.Emit(OpCodes.Call, requestType.GetProperty("Query").GetMethod);
-                aIL.Emit(OpCodes.Call, requestBodyType.GetProperty("Filters").GetMethod);
-                aIL.Emit(OpCodes.Ldarg_1);
-                aIL.Emit(OpCodes.Call, requestType.GetProperty("PageNumber").GetMethod);
-                aIL.Emit(OpCodes.Ldarg_1);
-                aIL.Emit(OpCodes.Call, requestType.GetProperty("PageSize").GetMethod);
-                aIL.Emit(OpCodes.Callvirt, strategyType.GetMethod("FindAsync"));
+                aIL.Emit(OpCodes.Call, impl);
                 aIL.Emit(OpCodes.Ret);
 
                 strategies[i] = (strategyType, strategyField);

@@ -51,7 +51,11 @@ namespace SearchV2.Api.MadfastMongo
 
         async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
         {
-            var filter = _filterBuilder.In(_idPropName, ids) & _filterCreator.Create(filters);
+            var filter = _filterBuilder.In(_idPropName, ids);
+            if(filters != null)
+            {
+                filter &= _filterCreator.Create(filters);
+            }
             var res = await(await _mols.FindAsync(filter)).ToListAsync();
             return res;
         }
