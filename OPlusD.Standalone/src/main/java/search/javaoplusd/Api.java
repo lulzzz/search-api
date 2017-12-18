@@ -2,8 +2,6 @@ package search.javaoplusd;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,34 +15,45 @@ public class Api
 {
 	static Db _db;
 
-	@RequestMapping(value = "/{type}/{target}", method = RequestMethod.GET, produces = "application/json")
-	public List<Integer> sub(@PathVariable String type, @PathVariable String target, String smiles, int hitLimit) throws Exception {
-		int typeInt;
-		if(type.equals("sub")) {
-			typeInt = Db.Types.SUB;
-		}
-		else if(type.equals("sup")) {
-			typeInt = Db.Types.SUP;
-		}
-		else if(type.equals("sim")) {
-			typeInt = Db.Types.SIM;
-		}
-		else {
-			throw new OperationNotSupportedException(String.format("Search type %s is not supported", type));
-		}
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String hello() {
+		return "Hello world!";
+	}
 
-		int targetInt;
-		if( target.equals("bb")) {
-			targetInt = Db.Targets.BB;
-		} else if( target.equals("sc")) {
-			targetInt = Db.Targets.SC;
-		} else {
-			throw new OperationNotSupportedException(String.format("Search target %s is not supported", type));
-		}
+	@RequestMapping(value = "/sub/{target}", method = RequestMethod.GET, produces = "application/json")
+	public List<Integer> sub(@PathVariable String target, String smiles, int hitLimit) throws Exception {
+		String optimized = Chem.getOptimizedSmarts(smiles);
+		int targetInd = targetToIndex(target);
+		String targetTable = targetToTable(target);
+		return _db.subSup("substructure_search", targetInd, targetTable, optimized, hitLimit, 10);
+	}
 
-		String optimized = Chem.getOptimizedSmarts(smiles);		
+	@RequestMapping(value = "/sup/{target}", method = RequestMethod.GET, produces = "application/json")
+	public List<Integer> sup(@PathVariable String target, String smiles, int hitLimit) throws Exception {
+		String optimized = Chem.getOptimizedSmarts(smiles);
+		int targetInd = targetToIndex(target);
+		String targetTable = targetToTable(target);
+		return _db.subSup("superstructure_search", targetInd, targetTable, optimized, hitLimit, 10);
+	}
 
-		return _db.find(targetInt, typeInt, optimized, hitLimit);
+	@RequestMapping(value = "/sim/{target}", method = RequestMethod.GET, produces = "application/json")
+	public List<Integer> similar(@PathVariable String target, String smiles, int hitLimit, double minSimilarity) throws Exception {
+		String optimized = Chem.getOptimizedSmarts(smiles);
+		int targetInd = targetToIndex(target);
+		String targetTable = targetToTable(target);
+		return _db.sim(targetInd, targetTable, optimized, hitLimit, minSimilarity);
+	}
+
+	private int targetToIndex(String target) throws Exception {
+		if("sc".equalsIgnoreCase(target)) return 1;
+		if("bb".equalsIgnoreCase(target)) return 0;
+		throw new Exception("bad target in route, must be 'sc' or 'bb'");
+	}
+
+	private String targetToTable(String target) throws Exception {
+		if("sc".equalsIgnoreCase(target)) return "get_structuresc_array";
+		if("bb".equalsIgnoreCase(target)) return "get_structurebb_array";
+		throw new Exception("bad target in route, must be 'sc' or 'bb'");
 	}
 
 	public final static void main(String[] args)

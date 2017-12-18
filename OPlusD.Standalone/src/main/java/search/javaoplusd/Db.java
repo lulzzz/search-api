@@ -100,7 +100,81 @@ public class Db {
 
 		return findInOracle(sp, target, targetTable, smiles, hitLimit);
 	}
+//--------------------------------------------------------------------------------------------------------------------
 
+// procedure substructure_search(
+	// pSmi in varchar2, 
+	// pType in number default(0), 
+	// maxcount in integer default(200), 
+	// timelimit in integer default (null));
+// procedure superstructure_search(
+	// pSmi in varchar2, 
+	// pType in number default(0), 
+	// maxcount in integer default(200), 
+	// timelimit in integer default (null));
+
+	public List<Integer> subSup(String sp, int targetInd, String targetTable, String smiles, int hitLimit, int timeLimit) throws SQLException {
+		List<Integer> results = new ArrayList<Integer>();
+		Connection c = getConnection();
+		CallableStatement call = null;
+		Statement select = null;
+		try {//exact_search
+			String searchQuery = String.format("{call search.%s(?, ?, ?, ?)}", sp);
+			call = c.prepareCall(searchQuery);
+			call.setString(1, smiles);
+			call.setInt(2, targetInd); // 0 for BB, 1 for SC
+			call.setInt(3, hitLimit);
+			call.setInt(4, timeLimit);
+
+			call.execute();
+
+			select = c.createStatement();
+			String selectQuery = String.format(SELECT_QUERY, targetTable);
+			ResultSet rs = select.executeQuery(selectQuery);
+			while (rs.next()) {
+				Integer mol = rs.getInt("id");
+				results.add(mol);
+			}
+		} finally {
+			if (call != null) { call.close(); }
+			if (select != null) { select.close(); }
+		}
+		return results;
+	}
+
+// procedure similarity_search(
+	// pSmi in varchar2, 
+	// pType in number default(0), 
+	// pTanimoto in number default(0.6), 
+	// maxcount in integer default(200));
+	public List<Integer> sim(int targetInd, String targetTable, String smiles, int hitLimit, double minSimilarity) throws SQLException {
+		List<Integer> results = new ArrayList<Integer>();
+		Connection c = getConnection();
+		CallableStatement call = null;
+		Statement select = null;
+		try {//exact_search
+			String searchQuery = "{call search.similarity_search(?, ?, ?, ?)}";
+			call = c.prepareCall(searchQuery);
+			call.setString(1, smiles);
+			call.setInt(2, targetInd); // 0 for BB, 1 for SC
+			call.setDouble(3, minSimilarity);
+			call.setInt(4, hitLimit);
+
+			call.execute();
+
+			select = c.createStatement();
+			String selectQuery = String.format(SELECT_QUERY, targetTable);
+			ResultSet rs = select.executeQuery(selectQuery);
+			while (rs.next()) {
+				Integer mol = rs.getInt("id");
+				results.add(mol);
+			}
+		} finally {
+			if (call != null) { call.close(); }
+			if (select != null) { select.close(); }
+		}
+		return results;
+	}
 }
 
 // call search.exact_search('O=C1CNC(=O)N1', 0); -- BB - 0, SC - 1
