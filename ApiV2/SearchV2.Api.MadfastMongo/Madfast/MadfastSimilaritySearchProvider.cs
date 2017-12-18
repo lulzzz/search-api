@@ -8,28 +8,6 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Api.MadfastMongo
 {
-    public class MadfastSearchQuery
-    {
-        public string Query { get; set; }
-        public double SimilarityThreshold { get; set; }
-    }
-    public class MadfastResultItem : IWithReference<string>
-    {
-        public string Ref { get; set; }
-        public double Similarity { get; set; }
-    }
-
-    class MadfastQueryResult
-    {
-        public IEnumerable<Target> Targets { get; set; }
-
-        public class Target
-        {
-            public double Dissimilarity { get; set; }
-            public string Targetid { get; set; }
-        }
-    }
-
     public class MadfastSimilaritySearchService : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
     {
         readonly static HttpClient _httpClient = new HttpClient();
@@ -49,37 +27,12 @@ namespace SearchV2.Api.MadfastMongo
 
         class Result : ISearchResult<MadfastResultItem>
         {
-            static readonly string[] empty = new string[0];
-
             volatile Task _runningTask;
             readonly List<MadfastResultItem> loaded = new List<MadfastResultItem>();
             readonly object _syncObj = new object();
 
-            public IEnumerable<MadfastResultItem> ReadyResult
-            {
-                get
-                {
-                    lock (_syncObj)
-                    {
-                        if (_runningTask == null)
-                        {
-                            return loaded;
-                        }
-                    }
-                    throw new InvalidOperationException("The result is not ready for synchronous consumption");
-                }
-            }
-
-            /// <summary>
-            /// mock for possible strategy in future
-            /// </summary>
-            /// <returns></returns>
-            readonly int _hitLimit;
-            int GetHitLimit() => _hitLimit;
-
             public Result(MadfastSimilaritySearchService creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
             {
-                _hitLimit = hitLimit;
                 _runningTask = Task.Run(async () =>
                 {
                     var r = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
@@ -124,15 +77,8 @@ namespace SearchV2.Api.MadfastMongo
 
             }
 
-            Task<MadfastResultItem> Next(int index, Task runningTask)
-                => runningTask.ContinueWith(t =>
-                {
-                    lock (_syncObj)
-                    {
-                        return loaded[index];
-                    }
-                });
-
+#warning needs to be refactored to separate three parts - cross-threading interaction, loading strategy, querying of target system
+            #region ISearchResult<MadfastResultItem>.ForEachAsync
             async Task ISearchResult<MadfastResultItem>.ForEachAsync(Func<MadfastResultItem, Task<bool>> body)
             {
                 if (_runningTask == null)
@@ -159,6 +105,30 @@ namespace SearchV2.Api.MadfastMongo
                     }
                 }
             }
+
+            public IEnumerable<MadfastResultItem> ReadyResult
+            {
+                get
+                {
+                    lock (_syncObj)
+                    {
+                        if (_runningTask == null)
+                        {
+                            return loaded;
+                        }
+                    }
+                    throw new InvalidOperationException("The result is not ready for synchronous consumption");
+                }
+            }
+
+            Task<MadfastResultItem> Next(int index, Task runningTask)
+                => runningTask.ContinueWith(t =>
+                {
+                    lock (_syncObj)
+                    {
+                        return loaded[index];
+                    }
+                });
 
             public IEnumerable<Task<MadfastResultItem>> AsyncResult
             {
@@ -220,6 +190,19 @@ namespace SearchV2.Api.MadfastMongo
                         yield return Task.FromResult(loaded[i]);
                         i++;
                     }
+                }
+            } 
+            #endregion
+
+
+            class MadfastQueryResult
+            {
+                public IEnumerable<Target> Targets { get; set; }
+
+                public class Target
+                {
+                    public double Dissimilarity { get; set; }
+                    public string Targetid { get; set; }
                 }
             }
         }

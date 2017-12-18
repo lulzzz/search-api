@@ -1,55 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SearchV2.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
-using static SearchV2.ApiCore.Api;
 
 namespace SearchV2.ApiCore
 {
-    [Route("molecules")]
-    [MoleculesControllerNameConvention]
-    public abstract class ControllerCore<TId, TFilterQuery, TData> where TData : IWithReference<TId>
-    {
-        protected ICatalogDb<TId, TFilterQuery, TData> _catalogDb;
-
-        [HttpGet]
-        [Route("{id}")]
-        public Task<TData> One([FromRoute]TId id) => _catalogDb.OneAsync(id);
-
-        internal static string CatPropName => nameof(_catalogDb);
-        internal static string ActionImplementationName => nameof(FindInternal);
-        
-        public static Task<object> FindInternal<TSearchQuery>(ISearchStrategy<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
-            => s.FindAsync(
-                    request.Query.Search,
-                    request.Query.Filters,
-                    request.PageNumber.Value,
-                    request.PageSize.Value);
-    }
-
-    public class SearchRequest<TSearchQuery, TFilterQuery>
-    {
-        public class Body
-        {
-            public TFilterQuery Filters { get; set; }
-            public TSearchQuery Search { get; set; }
-        }
-
-        [FromQuery]
-        public int? PageSize { get; set; } = 12;
-
-        [FromQuery]
-        public int? PageNumber { get; set; } = 1;
-
-        [FromBody, Required]
-        public Body Query { get; set; }
-    }
-
     public static class ControllerBuilder
     {
         static readonly ModuleBuilder mb = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("SearchV2.ApiCore.Dynamic"), AssemblyBuilderAccess.Run)
@@ -66,12 +24,11 @@ namespace SearchV2.ApiCore
                 TypeAttributes.Sealed,
                 null);
         
-        public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params SearchRegistration<TId>[] searches) where TData : IWithReference<TId>
+        public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params Api.SearchRegistration<TId>[] searches) where TData : IWithReference<TId>
         {
             var type = mb.CreateTypeBuilder("MoleculesController");
             var baseType = typeof(ControllerCore<TId, TFilterQuery, TData>);
             type.SetParent(baseType);
-
             
             var strategies = new(Type type, FieldInfo field)[searches.Length];
 
@@ -134,6 +91,26 @@ namespace SearchV2.ApiCore
             cIL.Emit(OpCodes.Ret);
 
             return type.CreateTypeInfo();
+        }
+
+        [Route("molecules")]
+        public abstract class ControllerCore<TId, TFilterQuery, TData> where TData : IWithReference<TId>
+        {
+            protected ICatalogDb<TId, TFilterQuery, TData> _catalogDb;
+
+            [HttpGet]
+            [Route("{id}")]
+            public Task<TData> One([FromRoute]TId id) => _catalogDb.OneAsync(id);
+
+            internal static string CatPropName => nameof(_catalogDb);
+            internal static string ActionImplementationName => nameof(FindInternal);
+
+            public static Task<object> FindInternal<TSearchQuery>(ISearchStrategy<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
+                => s.FindAsync(
+                        request.Query.Search,
+                        request.Query.Filters,
+                        request.PageNumber.Value,
+                        request.PageSize.Value);
         }
     }
 }

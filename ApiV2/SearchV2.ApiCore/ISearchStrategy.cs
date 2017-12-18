@@ -53,7 +53,7 @@ namespace SearchV2.ApiCore
                     i++;
                     return _trueTask;
                 });
-
+#warning before returned, data needs to be joined from TSearchResult and TData by IWithId<> prop
                 return new { Data = await _catalog.GetFilteredAsync(ids, filters) };
             }
             else
