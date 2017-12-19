@@ -22,7 +22,7 @@ namespace SearchV2.Api.MadfastMongo
 
         Task<ISearchResult<MadfastResultItem>> ISearchService<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
         {
-            return Task.FromResult<ISearchResult<MadfastResultItem>>(new Result(this, fastFetchCount, _hitLimit, query.SimilarityThreshold, query.Query));
+            return Task.FromResult<ISearchResult<MadfastResultItem>>(new Result(this, fastFetchCount, _hitLimit, 1.0 - query.SimilarityThreshold, query.Query));
         }
 
         class Result : ISearchResult<MadfastResultItem>
@@ -31,22 +31,27 @@ namespace SearchV2.Api.MadfastMongo
             readonly List<MadfastResultItem> loaded = new List<MadfastResultItem>();
             readonly object _syncObj = new object();
 
+            async Task<IList<MadfastResultItem>> Query(string url, string query, double maxDissimilarity, int count)
+            {
+                var r = await _httpClient.PostAsync(url, new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        { "max-count", count.ToString() },
+                        { "query", query },
+                        { "max-dissimilarity", maxDissimilarity.ToString() }
+                    }));
+
+                return JsonConvert
+                    .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
+                    .Targets
+                    .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
+                    .ToList();
+            }
+
             public Result(MadfastSimilaritySearchService creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
             {
                 _runningTask = Task.Run(async () =>
                 {
-                    var r = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
-                    {
-                            { "max-count", fastFetch.ToString() },
-                            { "query", query },
-
-                    }));
-
-                    var res = JsonConvert
-                        .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
-                        .Targets
-                        .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
-                        .ToList();
+                    var res = await Query(creator._url, query, maxDissimilarity, fastFetch);
 
                     lock (_syncObj)
                     {
@@ -54,16 +59,7 @@ namespace SearchV2.Api.MadfastMongo
                         _runningTask = res.Count < hitLimit
                             ? Task.Run(async () =>
                             {
-                                var r1 = await _httpClient.PostAsync(creator._url, new FormUrlEncodedContent(new Dictionary<string, string>
-                                        {
-                                                { "max-count", hitLimit.ToString() },
-                                                { "query", query }
-                                        }));
-                                var res1 = JsonConvert
-                                    .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
-                                    .Targets
-                                    .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
-                                    .ToList();
+                                var res1 = await Query(creator._url, query, maxDissimilarity, hitLimit);
                                 lock (_syncObj)
                                 {
                                     loaded.Clear();
