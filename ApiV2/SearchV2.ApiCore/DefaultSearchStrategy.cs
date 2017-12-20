@@ -1,6 +1,8 @@
 ﻿using SearchV2.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace SearchV2.ApiCore
@@ -27,10 +29,10 @@ namespace SearchV2.ApiCore
             int skip = (pageNumber - 1) * pageSize;
             int take = pageSize;
             var limitFixed = skip + take;
-            var result = await _search.FindAsync(searchQuery, limitFixed);
-            if (filters != null)
+            if (filters == null)
             {
-                var ids = new List<TId>(take);
+                var result = await _search.FindAsync(searchQuery, limitFixed);
+                var vals = new List<TSearchResult>(take);
                 var i = 0;
                 await result.ForEachAsync(id =>
                 {
@@ -42,33 +44,41 @@ namespace SearchV2.ApiCore
                         }
                         else
                         {
-                            ids.Add(id.Ref);
+                            vals.Add(id);
                         }
                     }
                     i++;
                     return _trueTask;
                 });
-#warning before returned, data needs to be joined from TSearchResult and TData by IWithId<> prop
-                return new { Data = await _catalog.GetFilteredAsync(ids, filters) };
+                
+                var filtered = await _catalog.GetFilteredAsync(vals.Select(v => v.Ref), filters);
+                return new { Data = Join(filtered, vals) };
             }
             else
             {
-                var buffer = new List<TId>();
-                var results = new List<TData>();
-                var fetchCount = skip + take;
-                await result.ForEachAsync(async item =>
+                var maxFetch = Math.Max(limitFixed, 1000);
+                var fetchCount = Math.Min(limitFixed << 1, maxFetch);
+
+                var searchResult = await _search.FindAsync(searchQuery, fetchCount);
+
+                var buffer = new List<TSearchResult>();
+                var allSearchResults = Enumerable.Empty<TSearchResult>();
+                var data = new List<TData>();
+
+                await searchResult.ForEachAsync(async item =>
                 {
-                    buffer.Add(item.Ref);
+                    buffer.Add(item);
                     if (buffer.Count == fetchCount)
                     {
-                        var filtered = (await _catalog.GetFilteredAsync(buffer, filters)).ToList();
+                        var filtered = (await _catalog.GetFilteredAsync(buffer.Select(i => i.Ref), filters)).ToList();
                         var filteredCount = filtered.Count;
-                        results.AddRange(filtered);
-                        buffer.Clear();
-                        if (results.Count >= limitFixed)
+                        data.AddRange(filtered);
+
+                        if (data.Count >= limitFixed)
                         {
                             return false;
                         }
+
                         fetchCount = filteredCount != 0
                             ? fetchCount * fetchCount / filteredCount - fetchCount
                             : fetchCount * 10;
@@ -78,22 +88,53 @@ namespace SearchV2.ApiCore
                         }
                         else
                         {
-                            var max = limitFixed > 1000 ? limitFixed : 1000;
-                            if (fetchCount > max)
+                            if (fetchCount > maxFetch)
                             {
-                                fetchCount = max;
+                                fetchCount = maxFetch;
                             }
                         }
+
+                        allSearchResults = allSearchResults.Union(buffer);
+                        buffer = new List<TSearchResult>(fetchCount);
                     }
                     return true;
                 });
 
                 if (buffer.Count > 0)
                 {
-                    results.AddRange(await _catalog.GetFilteredAsync(buffer, filters));
+                    data.AddRange(await _catalog.GetFilteredAsync(buffer.Select(i => i.Ref), filters));
+                    allSearchResults = allSearchResults.Union(buffer);
                 }
+                
+                return new { Data = Join(data.Skip(skip).Take(take), allSearchResults) };
+            }
+        }
 
-                return new { Data = results.Skip(skip).Take(take).ToArray() };
+        IEnumerable<object> Join(IEnumerable<TData> filtered, IEnumerable<TSearchResult> searchResult)
+        {
+            var tDataProps = typeof(TData).GetProperties();
+            var tSearchResultProps = typeof(TSearchResult).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            var filteredDict = filtered.ToDictionary(f => f.Ref);
+            foreach (var searchItem in searchResult)
+            {
+                if(filteredDict.ContainsKey(searchItem.Ref))
+                {
+                    var res = new Dictionary<string, object>();
+                    foreach (var prop in tDataProps)
+                    {
+                        res.Add(prop.Name, prop.GetValue(filteredDict[searchItem.Ref]));
+                    }
+
+                    foreach (var prop in tSearchResultProps)
+                    {
+                        if (prop.Name != nameof(IWithReference<TId>.Ref))
+                        {
+                            res.Add(prop.Name, prop.GetValue(searchItem));
+                        }
+                    }
+                    yield return res;
+                }
             }
         }
     }
