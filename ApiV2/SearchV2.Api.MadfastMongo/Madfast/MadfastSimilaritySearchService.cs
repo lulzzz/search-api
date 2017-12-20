@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SearchV2.Abstractions;
+using SearchV2.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,13 +26,13 @@ namespace SearchV2.Api.MadfastMongo
             return Task.FromResult<ISearchResult<MadfastResultItem>>(new Result(this, fastFetchCount, _hitLimit, 1.0 - query.SimilarityThreshold, query.Query));
         }
 
-        class Result : ISearchResult<MadfastResultItem>
+        class Result : ISearchResult<MadfastResultItem>, IAsyncOperation
         {
             volatile Task _runningTask;
             readonly List<MadfastResultItem> loaded = new List<MadfastResultItem>();
             readonly object _syncObj = new object();
 
-            async Task<IList<MadfastResultItem>> Query(string url, string query, double maxDissimilarity, int count)
+            async Task<IEnumerable<MadfastResultItem>> Query(string url, string query, double maxDissimilarity, int count)
             {
                 var r = await _httpClient.PostAsync(url, new FormUrlEncodedContent(new Dictionary<string, string>
                     {
@@ -40,11 +41,13 @@ namespace SearchV2.Api.MadfastMongo
                         { "max-dissimilarity", maxDissimilarity.ToString() }
                     }));
 
-                return JsonConvert
-                    .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
-                    .Targets
-                    .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
-                    .ToList();
+                return r.IsSuccessStatusCode
+                    ? JsonConvert
+                        .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
+                        .Targets
+                        .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
+                        .ToList()
+                    : Enumerable.Empty<MadfastResultItem>();
             }
 
             public Result(MadfastSimilaritySearchService creator, int fastFetch, int hitLimit, double maxDissimilarity, string query)
@@ -56,7 +59,7 @@ namespace SearchV2.Api.MadfastMongo
                     lock (_syncObj)
                     {
                         loaded.AddRange(res);
-                        _runningTask = res.Count < hitLimit
+                        _runningTask = res.Count() < hitLimit
                             ? Task.Run(async () =>
                             {
                                 var res1 = await Query(creator._url, query, maxDissimilarity, hitLimit);
@@ -76,7 +79,7 @@ namespace SearchV2.Api.MadfastMongo
 #warning needs to be refactored to separate three parts - cross-threading interaction, loading strategy, querying of target system
             #region ISearchResult<MadfastResultItem>.ForEachAsync
             async Task ISearchResult<MadfastResultItem>.ForEachAsync(Func<MadfastResultItem, Task<bool>> body)
-            {
+            {   
                 if (_runningTask == null)
                 {
                     foreach (var item in ReadyResult)
@@ -93,7 +96,7 @@ namespace SearchV2.Api.MadfastMongo
                     foreach (var itemTask in AsyncResult)
                     {
                         var item = await itemTask;
-                        var @continue = await body(item);
+                        var @continue = item != null && await body(item);
                         if (!@continue)
                         {
                             return;
@@ -117,12 +120,18 @@ namespace SearchV2.Api.MadfastMongo
                 }
             }
 
-            Task<MadfastResultItem> Next(int index, Task runningTask)
+            Task<MadfastResultItem> TryNext(int index, Task runningTask)
                 => runningTask.ContinueWith(t =>
                 {
                     lock (_syncObj)
                     {
-                        return loaded[index];
+                        if (_runningTask != null && _runningTask.IsFaulted)
+                        {
+                            throw new InvalidOperationException("Loading of results was faulted");
+                        }
+                        return index < loaded.Count
+                            ? loaded[index]
+                            : null;
                     }
                 });
 
@@ -160,7 +169,7 @@ namespace SearchV2.Api.MadfastMongo
 
                         if (running != null) // if running task was remembered in the lock, then no ready elements left and we yield awaiting task
                         {
-                            yield return Next(i, running);
+                            yield return TryNext(i, running);
                             i++;
                             break; // 
                         }
@@ -177,7 +186,7 @@ namespace SearchV2.Api.MadfastMongo
                             }
                             running = _runningTask;
                         }
-                        yield return Next(i, running);
+                        yield return TryNext(i, running);
                         i++;
                     } while (true);
 
@@ -187,7 +196,23 @@ namespace SearchV2.Api.MadfastMongo
                         i++;
                     }
                 }
-            } 
+            }
+
+            AsyncOperationStatus IAsyncOperation.Status
+            {
+                get
+                {
+                    if(_runningTask == null)
+                    {
+                        return AsyncOperationStatus.Finished;
+                    }
+                    if(_runningTask.IsFaulted)
+                    {
+                        return AsyncOperationStatus.Faulted;
+                    }
+                    return AsyncOperationStatus.Running;
+                }
+            }
             #endregion
 
 

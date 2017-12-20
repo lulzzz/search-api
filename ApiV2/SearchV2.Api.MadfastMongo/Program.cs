@@ -43,7 +43,7 @@ namespace SearchV2.Api.MadfastMongo
 
             ApiCore.Api.BuildHost(
                 new MongoCatalog<string, FilterQuery, MoleculeData>(mongoConnectionString, mongoDbName, new FilterQuery.Creator()),
-                ApiCore.Api.RegisterSearch("sim", CachingSearchService.Wrap(new MadfastSimilaritySearchService(madfastUrl, 1000)))
+                ApiCore.Api.RegisterSearch("sim", CachingSearchService.Wrap(new MadfastSimilaritySearchService(madfastUrl, 1000), 1000))
                 ).Run();
             return 0;
         }
