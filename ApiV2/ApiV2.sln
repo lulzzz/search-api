@@ -11,6 +11,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Api.MadfastMongo",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.Generics", "SearchV2.Generics\SearchV2.Generics.csproj", "{2C30CCAF-393B-4195-8867-34515D397F6F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apis", "Apis", "{92296724-2258-46FA-B7BE-98467A4A2875}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Implementations", "Implementations", "{9856D3A9-280B-400A-80B9-A03AD6D4AC59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.MongoDB", "SearchV2.MongoDB\SearchV2.MongoDB.csproj", "{8300C0D6-041B-4294-A890-BE1D9CB70296}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.RDKit", "SearchV2.RDKit\SearchV2.RDKit.csproj", "{239A49D1-57C4-44FA-A204-A79B8DAEAA18}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{3D09A95D-09AA-401E-92B6-6E799564E1CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +43,22 @@ Global
 		{2C30CCAF-393B-4195-8867-34515D397F6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C30CCAF-393B-4195-8867-34515D397F6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C30CCAF-393B-4195-8867-34515D397F6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8300C0D6-041B-4294-A890-BE1D9CB70296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8300C0D6-041B-4294-A890-BE1D9CB70296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8300C0D6-041B-4294-A890-BE1D9CB70296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8300C0D6-041B-4294-A890-BE1D9CB70296}.Release|Any CPU.Build.0 = Release|Any CPU
+		{239A49D1-57C4-44FA-A204-A79B8DAEAA18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{239A49D1-57C4-44FA-A204-A79B8DAEAA18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{239A49D1-57C4-44FA-A204-A79B8DAEAA18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{239A49D1-57C4-44FA-A204-A79B8DAEAA18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{41623BD7-691E-425B-B107-A251D57173F0} = {92296724-2258-46FA-B7BE-98467A4A2875}
+		{8300C0D6-041B-4294-A890-BE1D9CB70296} = {9856D3A9-280B-400A-80B9-A03AD6D4AC59}
+		{239A49D1-57C4-44FA-A204-A79B8DAEAA18} = {9856D3A9-280B-400A-80B9-A03AD6D4AC59}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7CD67C-20C9-40B0-865E-A8E83817731A}

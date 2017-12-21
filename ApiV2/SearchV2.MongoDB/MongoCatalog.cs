@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SearchV2.MongoDB
+namespace SearchV2.Api.MadfastMongo
 {
     public interface IFilterCreator<TFilter, TData>
     {

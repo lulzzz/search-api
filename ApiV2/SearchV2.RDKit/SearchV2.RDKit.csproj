@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="3.2.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SearchV2.Abstractions\SearchV2.Abstractions.csproj" />
+    <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
+  </ItemGroup>
+
+</Project>

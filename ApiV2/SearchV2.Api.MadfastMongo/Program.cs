@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using SearchV2.Generics;
+using SearchV2.MongoDB;
 
 namespace SearchV2.Api.MadfastMongo
 {
@@ -38,8 +32,6 @@ namespace SearchV2.Api.MadfastMongo
                 Console.WriteLine("DB name must be passed as environment variable 'mongo_dbname'");
                 return 1;
             }
-
-            //var searchProvider = new PostgresRDKitCatalog(postgresConnectionString);
 
             ApiCore.Api.BuildHost(
                 new MongoCatalog<string, FilterQuery, MoleculeData>(mongoConnectionString, mongoDbName, new FilterQuery.Creator()),

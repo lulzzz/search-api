@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Api.MadfastMongo
 {
+    using SearchResult = ISearchResult<MadfastResultItem>;
+
     public class MadfastSimilaritySearchService : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
     {
         readonly static HttpClient _httpClient = new HttpClient();
@@ -32,10 +34,10 @@ namespace SearchV2.Api.MadfastMongo
             }
         }
 
-        Task<ISearchResult<MadfastResultItem>> ISearchService<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
-        => Task.FromResult<ISearchResult<MadfastResultItem>>(
+        Task<SearchResult> ISearchService<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
+        => Task.FromResult<SearchResult>(
             new AsyncResult<MadfastResultItem>(
-                updateState => 
+                pushState => 
                     Task.Run(() =>
                         {
                             async Task LoadAndUpdate(int count, Func<int, Task> nextFactory)
@@ -55,7 +57,7 @@ namespace SearchV2.Api.MadfastMongo
                                         .ToList()
                                     : Enumerable.Empty<MadfastResultItem>();
                     
-                                updateState(nextFactory?.Invoke(res.Count()), res);
+                                pushState(nextFactory?.Invoke(res.Count()), res);
                             }
 
                             return LoadAndUpdate(fastFetchCount, count => count < _hitLimit ? LoadAndUpdate(_hitLimit, null) : null);
