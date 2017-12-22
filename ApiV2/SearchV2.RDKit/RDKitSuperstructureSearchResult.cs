@@ -2,7 +2,7 @@
 
 namespace SearchV2.RDKit
 {
-    public class RDKitSearchResult : IWithReference<string>
+    public class RDKitSuperstructureSearchResult : IWithReferenceInternal, IWithReference<string>
     {
         public string Ref { get; set; }
     }

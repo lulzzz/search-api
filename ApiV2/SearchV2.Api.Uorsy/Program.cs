@@ -26,7 +26,9 @@ namespace SearchV2.Api.Uorsy
 
             ApiCore.Api.BuildHost(
                 new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, new FilterQuery.Creator()),
-                ApiCore.Api.RegisterSearch("sub", CachingSearchService.Wrap(new RDKitSubstructureSearchService(env.PostgresConnection, 1000), 1000))
+                ApiCore.Api.RegisterSearch("sub", CachingSearchService.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000)),
+                //ApiCore.Api.RegisterSearch("sup", CachingSearchService.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000))
+                ApiCore.Api.RegisterSearch("sim", RDKitSearchService.Similar(env.PostgresConnection, 1000))
                 ).Run();
         }
     }
