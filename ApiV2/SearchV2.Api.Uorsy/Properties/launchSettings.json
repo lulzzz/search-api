@@ -1,0 +1,23 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:59716/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "Local": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "mongo_connection": "mongodb://10.3.28.43:27017",
+        "postgres_connection": "User ID=postgres;Host=192.168.99.101;Port=5432;Database=simsearch;Pooling=true;",
+        "mongo_dbname": "uorsy",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

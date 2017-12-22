@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Uorsy": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "mongo_connection": "mongodb://10.3.28.43:27017",
+        "mongo_dbname": "uorsy",
+        "csv_path": "D:\\linux_share\\Bases\\UORSY.txt"
+      }
+    }
+  }
+}

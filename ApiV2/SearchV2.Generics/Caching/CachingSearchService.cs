@@ -11,7 +11,6 @@ namespace SearchV2.Generics
     {
         public static ISearchService<TId, TSearchQuery, TSearchResult> Wrap<TId, TSearchQuery, TSearchResult>(this ISearchService<TId, TSearchQuery, TSearchResult> service, int maxCount)
             where TSearchResult : IWithReference<TId>
-            where TSearchQuery : ICacheKey
         {
             return new CachingSearchService<TId, TSearchQuery, TSearchResult>(service, maxCount);
         }
@@ -19,16 +18,29 @@ namespace SearchV2.Generics
 
     class CachingSearchService<TId, TSearchQuery, TSearchResult> : ISearchService<TId, TSearchQuery, TSearchResult> 
         where TSearchResult : IWithReference<TId>
-        where TSearchQuery : ICacheKey
     {
         readonly ISearchService<TId, TSearchQuery, TSearchResult> _service;
         readonly int _maxCount;
+
+        readonly Func<TSearchQuery, string> _getStringKey;
 
         readonly Dictionary<string, (ISearchResult<TSearchResult> data, DateTime lastRequestDate)> _cache = new Dictionary<string, (ISearchResult<TSearchResult>, DateTime)>();
         readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public CachingSearchService(ISearchService<TId, TSearchQuery, TSearchResult> service, int maxCount)
         {
+            if(typeof(TSearchQuery).GetInterface(nameof(ICacheKey)) != null)
+            {
+                _getStringKey = v => ((ICacheKey)v).ToStringKey();
+            }
+            else if (typeof(TSearchQuery) == typeof(string))
+            {
+                _getStringKey = (TSearchQuery v) => v as string;
+            }
+            else
+            {
+                throw new ArgumentException("TSearchQuery must be either string or ICacheKey");
+            }
             _service = service;
             _maxCount = maxCount;
         }
@@ -38,7 +50,7 @@ namespace SearchV2.Generics
             try
             {
                 await _semaphore.WaitAsync();
-                var key = query.ToStringKey();
+                var key = _getStringKey(query);
                 
                 if (_cache.TryGetValue(key, out var cacheItem))
                 {

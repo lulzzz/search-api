@@ -1,9 +1,10 @@
 ﻿using MongoDB.Driver;
-using SearchV2.MongoDB;
+using SearchV2.Api.MadfastMongo;
 using System.Collections.Generic;
 using System.Linq;
+using Uorsy.Data;
 
-namespace SearchV2.Api.MadfastMongo
+namespace SearchV2.Api.Uorsy
 {
     public class FilterQuery
     {

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\SearchV2.MongoDB\SearchV2.MongoDB.csproj" />
+    <ProjectReference Include="..\Uorsy.Data\Uorsy.Data.csproj" />
+  </ItemGroup>
+
+</Project>
