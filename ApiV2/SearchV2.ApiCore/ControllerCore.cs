@@ -30,14 +30,14 @@ namespace SearchV2.ApiCore
             var baseType = typeof(ControllerCore<TId, TFilterQuery, TData>);
             type.SetParent(baseType);
             
-            var strategies = new(Type type, FieldInfo field)[searches.Length];
+            var strategies = new(FieldInfo field, object impl)[searches.Length];
 
             for (int i = 0; i < searches.Length; i++)
             {
                 var item = searches[i];
                 var tSearchQuery = item._type.GetGenericArguments()[1];
                 var strategyType = typeof(ISearchStrategy<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
-                var strategyField = type.DefineField("str" + i, strategyType, FieldAttributes.Private);
+                var strategyField = type.DefineField("str" + i, strategyType, FieldAttributes.Private | FieldAttributes.Static);
 
                 var requestType = typeof(SearchRequest<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
                 var requestBodyType = requestType.GetNestedType("Body");
@@ -59,19 +59,18 @@ namespace SearchV2.ApiCore
                 var impl = baseType.GetMethod(ControllerCore<TId, TFilterQuery, TData>.ActionImplementationName).MakeGenericMethod(tSearchQuery);
 
                 var aIL = actionBuilder.GetILGenerator();
-                aIL.Emit(OpCodes.Ldarg_0);
-                aIL.Emit(OpCodes.Ldfld, strategyField);
+                aIL.Emit(OpCodes.Ldsfld, strategyField);
                 aIL.Emit(OpCodes.Ldarg_1);
                 aIL.Emit(OpCodes.Call, impl);
                 aIL.Emit(OpCodes.Ret);
 
-                strategies[i] = (strategyType, strategyField);
+                strategies[i] = (strategyField, item._strategy);
             }
 
             var constructor = type.DefineConstructor(
                 MethodAttributes.Public,
                 CallingConventions.Standard | CallingConventions.HasThis,
-                new[] { typeof(ICatalogDb<TId, TFilterQuery, TData>) }.Union(strategies.Select(s => s.type)).ToArray());
+                new[] { typeof(ICatalogDb<TId, TFilterQuery, TData>) });
 
             var cIL = constructor.GetILGenerator();
 
@@ -80,17 +79,22 @@ namespace SearchV2.ApiCore
             cIL.Emit(OpCodes.Ldarg_0);
             cIL.Emit(OpCodes.Ldarg_1);
             cIL.Emit(OpCodes.Stfld, catalogField);
-
-            for (int i = 0; i < strategies.Length; i++)
-            {
-                cIL.Emit(OpCodes.Ldarg_0);
-                cIL.Emit(OpCodes.Ldarg, i + 2);
-                cIL.Emit(OpCodes.Stfld, strategies[i].field);
-            }
-
             cIL.Emit(OpCodes.Ret);
 
-            return type.CreateTypeInfo();
+            var ti = type.CreateTypeInfo();
+
+            var fields = ti.GetFields(BindingFlags.Static | BindingFlags.NonPublic);
+
+            foreach (var s in strategies)
+            {
+                var field = fields.First(f => f.Name == s.field.Name);
+                var b = field == s.field;
+
+                //s.field.SetValue(null, s.impl);
+                field.SetValue(null, s.impl);
+            }
+
+            return ti;
         }
 
         [Route("molecules")]

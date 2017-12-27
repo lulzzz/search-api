@@ -3,16 +3,12 @@ using SearchV2.Abstractions;
 using SearchV2.Generics;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace SearchV2.RDKit
 {
-    internal interface IWithReferenceInternal
-    {
-        string Ref { set; }
-    }
-
-    internal class RDKitSimpleSearchService<T> : ISearchService<string, string, T> where T : class, IWithReference<string>, IWithReferenceInternal, new()
+    internal class RDKitSimpleSearchService : ISearchService<string, string, RDKitSimpleSearchResult>
     {
         readonly string _connectionString;
         readonly int _hitLimit;
@@ -34,7 +30,7 @@ namespace SearchV2.RDKit
             _whereOrderBy = whereOrderBy;
         }
 
-        async Task<ISearchResult<T>> ISearchService<string, string, T>.FindAsync(string query, int fastFetchCount)
+        async Task<ISearchResult<RDKitSimpleSearchResult>> ISearchService<string, string, RDKitSimpleSearchResult>.FindAsync(string query, int fastFetchCount)
         {
             var con = new NpgsqlConnection(_connectionString);
             con.Open();
@@ -45,7 +41,7 @@ namespace SearchV2.RDKit
             searchCommand.Parameters.Add(new NpgsqlParameter("@SearchText", query));
             await searchCommand.ExecuteNonQueryAsync();
 
-            return new AsyncResult<T>(
+            return new AsyncResult<RDKitSimpleSearchResult>(
                 pushStatus =>
                 {
                     async Task LoadAndUpdate(int fetchCount, int leftToLoad)
@@ -54,14 +50,16 @@ namespace SearchV2.RDKit
                         var fetchCommand = t.Connection.CreateCommand();
                         fetchCommand.CommandText = string.Format(fetchLimitedQuery, fetchCount);
 
-                        var results = new List<T>(fetchCount);
+                        var results = new List<RDKitSimpleSearchResult>(fetchCount);
 
                         using (var fastReader = await fetchCommand.ExecuteReaderAsync())
                         {
                             while (fastReader.Read())
                             {
-                                var nr = new T();
-                                ((IWithReferenceInternal)nr).Ref = (string)fastReader[nameof(Mr.Ref)];
+                                var nr = new RDKitSimpleSearchResult
+                                {
+                                    Ref = (string)fastReader[nameof(Mr.Ref)]
+                                };
                                 results.Add(nr);
                             }
                         }
@@ -72,30 +70,23 @@ namespace SearchV2.RDKit
                             : LoadAndUpdate(Math.Max(_hitLimit / 10, fastFetchCount * 10), leftToLoad - fetchCount);
 
                         pushStatus(continuation, results);
+
+                        if (continuation == null)
+                        {
+                            var c = t.Connection;
+                            if (!t.IsCompleted)
+                            {
+                                await t.CommitAsync();
+                            }
+                            if (c.State != ConnectionState.Closed)
+                            {
+                                c.Dispose();
+                            }
+                        }
                     }
 
                     return LoadAndUpdate(fastFetchCount, _hitLimit);
                 });
         }
-
-//        public static string BuildCondition(SearchQuery searchQuery)
-//        {
-//            switch (searchQuery.Type)
-//            {
-//#warning Smart is not actually implemented, for now is exact molecule
-//                case SearchType.Smart:
-//                case SearchType.Exact:
-//                    return "ms.mol=mol_from_smiles(@SearchText::cstring)";
-//                case SearchType.Substructure:
-//                    return "ms.mol@>mol_from_smiles(@SearchText::cstring)";// ORDER BY tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), ms.fp) DESC";
-//                case SearchType.Similar:
-//#warning subject to query corrections
-//                    return "morganbv_fp(mol_from_smiles(@SearchText::cstring))%ms.fp";// ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>ms.fp";
-//                case SearchType.Superstructure:
-//                    return "ms.mol<@mol_from_smiles(@SearchText::cstring)";// ORDER BY tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), ms.fp) DESC";
-//                default:
-//                    throw new ArgumentException();
-//            }
-//        }
     }
 }

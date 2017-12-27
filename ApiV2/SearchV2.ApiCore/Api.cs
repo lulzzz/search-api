@@ -19,18 +19,19 @@ namespace SearchV2.ApiCore
             .CaptureStartupErrors(true)
             .ConfigureServices(sc =>
             {
-                sc.Add(new ServiceDescriptor(typeof(ICatalogDb<TId, TFilterQuery, TData>), catalog));
+                var tCatalog = typeof(ICatalogDb<TId, TFilterQuery, TData>);
+                sc.Add(new ServiceDescriptor(tCatalog, catalog));
 
-                foreach (var sp in searches.Select(sr => new ServiceDescriptor(sr._type, sr._searchProvider)))
+                foreach(var s in searches)
                 {
-                    sc.Add(sp);
-                    var tSearchQuery = sp.ServiceType.GetGenericArguments()[1];
-                    var tid = sp.ServiceType.GetGenericArguments()[0];
-                    var tSearchResult = sp.ServiceType.GetGenericArguments()[2];
-                    sc.Add(new ServiceDescriptor(
-                        typeof(ISearchStrategy<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery)),
-                        typeof(DefaultSearchStrategy<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData)),
-                        ServiceLifetime.Singleton));
+                    var tSearchService = s._type;
+
+                    var tSearchQuery = tSearchService.GetGenericArguments()[1];
+                    var tid = tSearchService.GetGenericArguments()[0];
+                    var tSearchResult = tSearchService.GetGenericArguments()[2];
+
+                    var tStrategy = typeof(DefaultSearchStrategy<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData));
+                    s._strategy = tStrategy.GetConstructor(new[] { tCatalog, tSearchService }).Invoke(new object[] { catalog, s._searchProvider });
                 }
                 sc.Add(new ServiceDescriptor(typeof(ControllerDescriptor), new ControllerDescriptor { ControllerType = ControllerBuilder.CreateControllerClass(catalog, searches) }));
             })
@@ -42,6 +43,7 @@ namespace SearchV2.ApiCore
             internal readonly object _searchProvider;
             internal readonly Type _type;
             internal readonly string _routeSuffix;
+            internal object _strategy;
 
             internal SearchRegistration(string routeSuffix, object searchProvider, Type type)
             {

@@ -7,8 +7,8 @@ namespace SearchV2.ApiCore
     {
         public class Body
         {
-            public TFilterQuery Filters { get; set; }
             public TSearchQuery Search { get; set; }
+            public TFilterQuery Filters { get; set; }
         }
 
         [FromQuery]
