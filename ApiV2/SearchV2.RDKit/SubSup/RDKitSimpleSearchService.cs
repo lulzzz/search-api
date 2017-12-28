@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.RDKit
 {
-    internal class RDKitSimpleSearchService : ISearchService<string, string, RDKitSimpleSearchResult>
+    class RDKitSimpleSearchService : ISearchService<string, string, RDKitSimpleSearchResult>
     {
         readonly string _connectionString;
         readonly int _hitLimit;

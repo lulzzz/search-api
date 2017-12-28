@@ -1,5 +1,4 @@
 ﻿using SearchV2.Abstractions;
-using System;
 
 namespace SearchV2.RDKit
 {

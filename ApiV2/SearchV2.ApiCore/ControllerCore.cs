@@ -88,9 +88,6 @@ namespace SearchV2.ApiCore
             foreach (var s in strategies)
             {
                 var field = fields.First(f => f.Name == s.field.Name);
-                var b = field == s.field;
-
-                //s.field.SetValue(null, s.impl);
                 field.SetValue(null, s.impl);
             }
 
@@ -98,6 +95,7 @@ namespace SearchV2.ApiCore
         }
 
         [Route("molecules")]
+        [ValidateModel]
         public abstract class ControllerCore<TId, TFilterQuery, TData> where TData : IWithReference<TId>
         {
             protected ICatalogDb<TId, TFilterQuery, TData> _catalogDb;

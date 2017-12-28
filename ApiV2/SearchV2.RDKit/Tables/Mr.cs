@@ -2,7 +2,7 @@
 
 namespace SearchV2.RDKit
 {
-    public class Mr : IWithReference<string>
+    class Mr : IWithReference<string>
     {
         public int Id { get; set; }
         public string Ref { get; set; }

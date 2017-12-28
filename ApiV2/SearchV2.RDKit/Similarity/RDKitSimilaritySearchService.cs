@@ -8,7 +8,7 @@ using System.Data;
 
 namespace SearchV2.RDKit
 {
-    internal class RDKitSimilaritySearchService : ISearchService<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
+    class RDKitSimilaritySearchService : ISearchService<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
     {
         private string _connectionString;
         private int _hitLimit;
