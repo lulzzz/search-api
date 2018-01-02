@@ -4,6 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
 using Swashbuckle.AspNetCore.Swagger;
+using Serilog;
+using Serilog.Configuration;
+using Serilog.Context;
+using Microsoft.AspNetCore.Http.Extensions;
+using System;
 
 namespace SearchV2.ApiCore
 {
@@ -37,6 +42,12 @@ namespace SearchV2.ApiCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var logPath = env.IsDevelopment()
+                ? "/searchV2_logs/"
+                : "../log/";
+
+            var log = Log.Logger = new LoggerConfiguration().WriteTo.File(logPath, rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2).CreateLogger();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -44,6 +55,22 @@ namespace SearchV2.ApiCore
 
             app
                 .UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin())
+                .Use(async (context, next) => {
+                    var r = context.Request;
+                    using (LogContext.PushProperty("HttpRequestMethod", r.Method))
+                    using (LogContext.PushProperty("HttpRequestUri", r.GetDisplayUrl()))
+                    {
+                        try
+                        {
+                            await next.Invoke();
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error(e, "Uncaught exception");
+                            throw;
+                        }
+                    }
+                })
                 .UseMvc()
                 .UseSwagger()
                 .UseSwaggerUI(c =>

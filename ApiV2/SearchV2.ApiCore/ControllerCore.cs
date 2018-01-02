@@ -36,7 +36,7 @@ namespace SearchV2.ApiCore
             {
                 var item = searches[i];
                 var tSearchQuery = item._type.GetGenericArguments()[1];
-                var strategyType = typeof(ISearchStrategy<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
+                var strategyType = typeof(ISearchService<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
                 var strategyField = type.DefineField("str" + i, strategyType, FieldAttributes.Private | FieldAttributes.Static);
 
                 var requestType = typeof(SearchRequest<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
@@ -107,7 +107,7 @@ namespace SearchV2.ApiCore
             internal static string CatPropName => nameof(_catalogDb);
             internal static string ActionImplementationName => nameof(FindInternal);
 
-            public static Task<object> FindInternal<TSearchQuery>(ISearchStrategy<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
+            public static Task<object> FindInternal<TSearchQuery>(ISearchService<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
                 => s.FindAsync(
                         request.Query.Search,
                         request.Query.Filters,

@@ -5,17 +5,17 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace SearchV2.ApiCore
+namespace SearchV2.Generics
 {
-    public class DefaultSearchStrategy<TId, TSearchQuery, TFilterQuery, TSearchResult, TData> 
-        : ISearchStrategy<TSearchQuery, TFilterQuery> 
+    public class CompositeSearchService<TId, TSearchQuery, TFilterQuery, TSearchResult, TData> 
+        : ISearchService<TSearchQuery, TFilterQuery> 
         where TData : IWithReference<TId>
         where TSearchResult : IWithReference<TId>
     {
         readonly ICatalogDb<TId, TFilterQuery, TData> _catalog;
-        readonly ISearchService<TId, TSearchQuery, TSearchResult> _search;
+        readonly ISearchComponent<TId, TSearchQuery, TSearchResult> _search;
 
-        public DefaultSearchStrategy(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchService<TId, TSearchQuery, TSearchResult> search)
+        public CompositeSearchService(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchComponent<TId, TSearchQuery, TSearchResult> search)
         {
             _catalog = catalog;
             _search = search;
@@ -24,7 +24,7 @@ namespace SearchV2.ApiCore
         static readonly Task<bool> _falseTask = Task.FromResult(false);
         static readonly Task<bool> _trueTask = Task.FromResult(true);
 
-        async Task<object> ISearchStrategy<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int pageNumber, int pageSize)
+        async Task<object> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int pageNumber, int pageSize)
         {
             int skip = (pageNumber - 1) * pageSize;
             int take = pageSize;

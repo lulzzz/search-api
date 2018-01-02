@@ -8,7 +8,7 @@ using System.Data;
 
 namespace SearchV2.RDKit
 {
-    class RDKitSimilaritySearchService : ISearchService<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
+    class RDKitSimilaritySearchService : ISearchComponent<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
     {
         private string _connectionString;
         private int _hitLimit;
@@ -29,7 +29,7 @@ namespace SearchV2.RDKit
 
         const string setThresholdQuery = "SET rdkit.tanimoto_threshold={0}";
 
-        async Task<ISearchResult<RDKitSimilaritySearchResult>> ISearchService<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>.FindAsync(RDKitSimilaritySearchRequest query, int fastFetchCount)
+        async Task<ISearchResult<RDKitSimilaritySearchResult>> ISearchComponent<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>.FindAsync(RDKitSimilaritySearchRequest query, int fastFetchCount)
         {
             var con = new NpgsqlConnection(_connectionString);
             con.Open();

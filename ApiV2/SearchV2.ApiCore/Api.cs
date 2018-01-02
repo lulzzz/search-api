@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using SearchV2.Abstractions;
+using SearchV2.Generics;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +31,7 @@ namespace SearchV2.ApiCore
                     var tid = tSearchService.GetGenericArguments()[0];
                     var tSearchResult = tSearchService.GetGenericArguments()[2];
 
-                    var tStrategy = typeof(DefaultSearchStrategy<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData));
+                    var tStrategy = typeof(CompositeSearchService<,,,,>).MakeGenericType(tid, tSearchQuery, typeof(TFilterQuery), tSearchResult, typeof(TData));
                     s._strategy = tStrategy.GetConstructor(new[] { tCatalog, tSearchService }).Invoke(new object[] { catalog, s._searchProvider });
                 }
                 sc.Add(new ServiceDescriptor(typeof(ControllerDescriptor), new ControllerDescriptor { ControllerType = ControllerBuilder.CreateControllerClass(catalog, searches) }));
@@ -53,9 +54,10 @@ namespace SearchV2.ApiCore
             }
         }
 
-        public static SearchRegistration<TId> RegisterSearch<TId, TSearchQuery, TSearchResult>(string routeSuffix, ISearchService<TId, TSearchQuery, TSearchResult> searchService) where TSearchResult : IWithReference<TId>
+        public static SearchRegistration<TId> RegisterSearch<TId, TSearchQuery, TSearchResult>(string routeSuffix, ISearchComponent<TId, TSearchQuery, TSearchResult> searchService) 
+            where TSearchResult : IWithReference<TId>
         {
-            return new SearchRegistration<TId>(routeSuffix, searchService, typeof(ISearchService<TId, TSearchQuery, TSearchResult>));
+            return new SearchRegistration<TId>(routeSuffix, searchService, typeof(ISearchComponent<TId, TSearchQuery, TSearchResult>));
         }
     }
 }

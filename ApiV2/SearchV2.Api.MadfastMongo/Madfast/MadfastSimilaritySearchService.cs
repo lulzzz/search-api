@@ -11,7 +11,7 @@ namespace SearchV2.Api.MadfastMongo
 {
     using SearchResult = ISearchResult<MadfastResultItem>;
 
-    public class MadfastSimilaritySearchService : ISearchService<string, MadfastSearchQuery, MadfastResultItem>
+    public class MadfastSimilaritySearchService : ISearchComponent<string, MadfastSearchQuery, MadfastResultItem>
     {
         readonly static HttpClient _httpClient = new HttpClient();
         readonly string _url;
@@ -34,7 +34,7 @@ namespace SearchV2.Api.MadfastMongo
             }
         }
 
-        Task<SearchResult> ISearchService<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
+        Task<SearchResult> ISearchComponent<string, MadfastSearchQuery, MadfastResultItem>.FindAsync(MadfastSearchQuery query, int fastFetchCount)
         => Task.FromResult<SearchResult>(
             new AsyncResult<MadfastResultItem>(
                 pushState => 

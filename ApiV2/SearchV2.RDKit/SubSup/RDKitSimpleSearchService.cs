@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.RDKit
 {
-    class RDKitSimpleSearchService : ISearchService<string, string, RDKitSimpleSearchResult>
+    class RDKitSimpleSearchService : ISearchComponent<string, string, RDKitSimpleSearchResult>
     {
         readonly string _connectionString;
         readonly int _hitLimit;
@@ -30,7 +30,7 @@ namespace SearchV2.RDKit
             _whereOrderBy = whereOrderBy;
         }
 
-        async Task<ISearchResult<RDKitSimpleSearchResult>> ISearchService<string, string, RDKitSimpleSearchResult>.FindAsync(string query, int fastFetchCount)
+        async Task<ISearchResult<RDKitSimpleSearchResult>> ISearchComponent<string, string, RDKitSimpleSearchResult>.FindAsync(string query, int fastFetchCount)
         {
             var con = new NpgsqlConnection(_connectionString);
             con.Open();
