@@ -42,15 +42,21 @@ namespace SearchV2.ApiCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            var logPath = env.IsDevelopment()
-                ? "/searchV2_logs/"
-                : "../log/";
-
-            var log = Log.Logger = new LoggerConfiguration().WriteTo.File(logPath, rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2).CreateLogger();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .WriteTo.File("/searchV2_logs/log-.txt", rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2)
+                    .CreateLogger();
+            }
+            else
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Error()
+                    .WriteTo.File("../log/log-.txt", rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2)
+                    .CreateLogger();
             }
 
             app
@@ -66,7 +72,7 @@ namespace SearchV2.ApiCore
                         }
                         catch (Exception e)
                         {
-                            log.Error(e, "Uncaught exception");
+                            Log.Logger.Error(e, "Uncaught exception");
                             throw;
                         }
                     }
