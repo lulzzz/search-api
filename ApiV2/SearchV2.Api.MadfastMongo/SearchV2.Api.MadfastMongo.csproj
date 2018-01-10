@@ -13,6 +13,7 @@
     <ProjectReference Include="..\SearchV2.Abstractions\SearchV2.Abstractions.csproj" />
     <ProjectReference Include="..\SearchV2.ApiCore\SearchV2.ApiCore.csproj" />
     <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
+    <ProjectReference Include="..\SearchV2.MongoDB\SearchV2.MongoDB.csproj" />
   </ItemGroup>
 
 </Project>

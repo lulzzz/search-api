@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SearchV2.Api.MadfastMongo
+namespace SearchV2.MongoDB
 {
     public interface IFilterCreator<TFilter, TData>
     {
@@ -21,18 +21,13 @@ namespace SearchV2.Api.MadfastMongo
         readonly FilterDefinitionBuilder<TData> _filterBuilder = Builders<TData>.Filter;
         readonly string _idPropName;
 
-        static MongoCatalog()
-        {
-            BsonDefaults.GuidRepresentation = GuidRepresentation.Standard;
-        }
-
         public MongoCatalog(string connectionString, string dbName, IFilterCreator<TFilterQuery, TData> filterCreator)
         {
             _idPropName = nameof(IWithReference<TId>.Ref);
 
             var cp = new ConventionPack();
             cp.AddClassMapConvention("ids", bcm => bcm.MapIdProperty(_idPropName));
-            ConventionRegistry.Register("idsPack", cp, t => typeof(TData) == t);
+            ConventionRegistry.Register(typeof(TData).Name + "idsPack", cp, t => typeof(TData) == t);
 
             _client = new MongoClient(connectionString);
             var db = _client.GetDatabase(dbName);
@@ -41,21 +36,23 @@ namespace SearchV2.Api.MadfastMongo
             _filterCreator = filterCreator;
         }
 
+
+        #region ICatalogDb
         async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
         {
             var filter = _filterBuilder.In(_idPropName, ids);
-            var res = await(await _mols.FindAsync(filter)).ToListAsync();
+            var res = await (await _mols.FindAsync(filter)).ToListAsync();
             return res;
         }
 
         async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
         {
             var filter = _filterBuilder.In(_idPropName, ids);
-            if(filters != null)
+            if (filters != null)
             {
                 filter &= _filterCreator.Create(filters);
             }
-            var res = await(await _mols.FindAsync(filter)).ToListAsync();
+            var res = await (await _mols.FindAsync(filter)).ToListAsync();
             return res;
         }
 
@@ -63,5 +60,6 @@ namespace SearchV2.Api.MadfastMongo
         {
             return (await _mols.FindAsync(_filterBuilder.Eq(_idPropName, id))).First();
         }
+        #endregion
     }
 }

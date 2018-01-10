@@ -13,11 +13,6 @@ namespace SearchV2.MongoDB
 
     public static class MongoBootstrapper
     {
-        static MongoBootstrapper()
-        {
-            BsonDefaults.GuidRepresentation = GuidRepresentation.Standard;
-        }
-
         readonly static HashSet<Type> initialized = new HashSet<Type>();
 
         public static IEnumerable<TDoc> LoadFromCsv<TDoc, TId>(string path, Func<string, TDoc> factory)
