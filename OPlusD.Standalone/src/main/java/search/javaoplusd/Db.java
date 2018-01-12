@@ -61,6 +61,7 @@ public class Db {
 		} finally {
 			if (call != null) { call.close(); }
 			if (select != null) { select.close(); }
+			if (c != null) { c.close(); }
 		}
 		return results;
 	}
