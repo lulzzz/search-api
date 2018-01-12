@@ -1,7 +1,7 @@
 FROM openjdk:8u131-jdk-alpine AS build-env
 
-ENV http_proxy='http://10.3.80.80:3128'
-ENV https_proxy='http://10.3.80.80:3128'
+# ENV http_proxy='http://10.3.80.80:3128'
+# ENV https_proxy='http://10.3.80.80:3128'
 
 RUN apk add --no-cache curl tar bash
 

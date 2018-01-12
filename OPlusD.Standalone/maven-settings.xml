@@ -1,15 +1,13 @@
 <settings>
-  <proxies>
+  <!-- <proxies>
    <proxy>
       <id>example-proxy</id>
       <active>true</active>
       <protocol>http</protocol>
       <host>10.3.80.80</host>
       <port>3128</port>
-      <!-- <username>proxyuser</username>
-      <password>somepassword</password> -->
     </proxy>
-  </proxies>
+  </proxies> -->
   <servers>
     <server>
       <username>kostya.shnypir@gmail.com</username>
