@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 
 namespace SearchV2.ApiCore
 {
+    public sealed class SearchDescriptor
+    {
+        public Type TSearchQuery { get; set; }// _type.GetGenericArguments()[1];
+        public object SearchService { get; set; }
+        public string RouteSuffix { get; set; }
+    }
+
     public static class ControllerBuilder
     {
         static readonly ModuleBuilder mb = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("SearchV2.ApiCore.Dynamic"), AssemblyBuilderAccess.Run)
@@ -24,7 +31,7 @@ namespace SearchV2.ApiCore
                 TypeAttributes.Sealed,
                 null);
         
-        public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params Api.SearchRegistration<TId>[] searches) where TData : IWithReference<TId>
+        public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params SearchDescriptor[] searches) where TData : IWithReference<TId>
         {
             var type = mb.CreateTypeBuilder("MoleculesController");
             var baseType = typeof(ControllerCore<TId, TFilterQuery, TData>);
@@ -35,7 +42,7 @@ namespace SearchV2.ApiCore
             for (int i = 0; i < searches.Length; i++)
             {
                 var item = searches[i];
-                var tSearchQuery = item._type.GetGenericArguments()[1];
+                var tSearchQuery = item.TSearchQuery;
                 var strategyType = typeof(ISearchService<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
                 var strategyField = type.DefineField("str" + i, strategyType, FieldAttributes.Private | FieldAttributes.Static);
 
@@ -54,7 +61,7 @@ namespace SearchV2.ApiCore
                 actionBuilder.SetCustomAttribute(
                     new CustomAttributeBuilder(
                         typeof(HttpPostAttribute).GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),
-                        new object[] { $"search/{item._routeSuffix}" }));
+                        new object[] { $"search/{item.RouteSuffix}" }));
 
                 var impl = baseType.GetMethod(ControllerCore<TId, TFilterQuery, TData>.ActionImplementationName).MakeGenericMethod(tSearchQuery);
 
@@ -64,7 +71,7 @@ namespace SearchV2.ApiCore
                 aIL.Emit(OpCodes.Call, impl);
                 aIL.Emit(OpCodes.Ret);
 
-                strategies[i] = (strategyField, item._strategy);
+                strategies[i] = (strategyField, item.SearchService);
             }
 
             var constructor = type.DefineConstructor(
