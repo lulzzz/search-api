@@ -118,7 +118,7 @@ namespace SearchV2.ApiCore
                 => s.FindAsync(
                         request.Query.Search,
                         request.Query.Filters,
-                        request.PageNumber.Value,
+                        (request.PageNumber.Value - 1) * request.PageSize.Value,
                         request.PageSize.Value);
         }
     }

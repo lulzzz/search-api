@@ -25,12 +25,18 @@ namespace SearchV2.MongoDB
 
         async Task<object> ISearchService<string, TFilterQuery>.FindAsync(string searchQuery, TFilterQuery filters, int skip, int take)
         {
-            var filter = Builders<TData>.Filter.Eq(_idPropName, searchQuery) | Builders<TData>.Filter.Text(searchQuery);
+            var filter = Builders<TData>.Filter.Text(searchQuery);
             if (filters != null)
             {
                 filter &= _filterCreator.Create(filters);
             }
-            var res = await _mols.Find(filter).Project(Builders<TData>.Projection.MetaTextScore("score")).Sort(Builders<TData>.Sort.MetaTextScore("score")).Skip(skip).Limit(take).ToListAsync();
+            var res = await _mols.Find(filter)
+                .Project(Builders<TData>.Projection.MetaTextScore("score"))
+                .Sort(Builders<TData>.Sort.MetaTextScore("score"))
+                .Skip(skip)
+                .Limit(take)
+                .ToListAsync();
+
             return res.Select(r => r.ToDictionary());
         }
         

@@ -24,10 +24,8 @@ namespace SearchV2.Generics
         static readonly Task<bool> _falseTask = Task.FromResult(false);
         static readonly Task<bool> _trueTask = Task.FromResult(true);
 
-        async Task<object> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int pageNumber, int pageSize)
+        async Task<object> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int skip, int take)
         {
-            int skip = (pageNumber - 1) * pageSize;
-            int take = pageSize;
             var limitFixed = skip + take;
             if (filters == null)
             {
