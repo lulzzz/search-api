@@ -1,7 +1,7 @@
 ﻿using Common;
 using Microsoft.AspNetCore.Hosting;
-using SearchV2.Api.MadfastMongo;
 using SearchV2.Generics;
+using SearchV2.MongoDB;
 using SearchV2.RDKit;
 using System;
 using System.Globalization;
@@ -24,11 +24,14 @@ namespace SearchV2.Api.Uorsy
 
             var env = EnvironmentHelper.Read<Env>();
 
+            var filterCreator = new FilterQuery.Creator();
+
             ApiCore.Api.BuildHost(
-                new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, new FilterQuery.Creator()),
+                new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, filterCreator),
                 ApiCore.Api.RegisterSearch("sub", CachingSearchService.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000)),
                 ApiCore.Api.RegisterSearch("sup", CachingSearchService.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000)),
-                ApiCore.Api.RegisterSearch("sim", RDKitSearchService.Similar(env.PostgresConnection, 1000))
+                ApiCore.Api.RegisterSearch("sim", RDKitSearchService.Similar(env.PostgresConnection, 1000)),
+                ApiCore.Api.RegisterSearch("smart", new MongoTextSearch<FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, nameof(MoleculeData.Ref), filterCreator))
                 ).Run();
         }
     }

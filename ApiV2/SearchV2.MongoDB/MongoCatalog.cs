@@ -8,11 +8,6 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public interface IFilterCreator<TFilter, TData>
-    {
-        FilterDefinition<TData> Create(TFilter filters);
-    }
-
     public class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> where TData : IWithReference<TId>
     {
         readonly MongoClient _client;
@@ -25,9 +20,7 @@ namespace SearchV2.MongoDB
         {
             _idPropName = nameof(IWithReference<TId>.Ref);
 
-            var cp = new ConventionPack();
-            cp.AddClassMapConvention("ids", bcm => bcm.MapIdProperty(_idPropName));
-            ConventionRegistry.Register(typeof(TData).Name + "idsPack", cp, t => typeof(TData) == t);
+            Init.ForType<TData>(_idPropName);
 
             _client = new MongoClient(connectionString);
             var db = _client.GetDatabase(dbName);

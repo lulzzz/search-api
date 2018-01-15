@@ -7,8 +7,8 @@ namespace SearchV2.MongoDB
 {
     class Init
     {
-        static readonly HashSet<Type> _done;
-        public void ForType<T>(string idPropName)
+        static readonly HashSet<Type> _done = new HashSet<Type>();
+        public static void ForType<T>(string idPropName)
         {
             var t = typeof(T);
             if (_done.Add(t))
