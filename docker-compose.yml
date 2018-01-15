@@ -63,6 +63,8 @@ services:
       - "27017:27017"
     volumes:
       - "~/mongo-data:/data/db"
+    security_opt:
+      - seccomp:unconfined
   mongo-bootstrap:
     image: mongo-bootstrap
     build: 

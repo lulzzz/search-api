@@ -59,12 +59,8 @@ public class Api
 	public final static void main(String[] args)
 	{
 		String con = System.getenv("ora_connection");
-		String user = System.getenv("ora_user"); // c$dcischem
-		String pass = System.getenv("ora_pass"); // y3wxf1o(PLpt
-
-		System.out.println(con);
-		System.out.println(user);
-		System.out.println(pass);
+		String user = System.getenv("ora_user");
+		String pass = System.getenv("ora_pass");
 
 		if(con == null || con.length() == 0
 		|| user == null || user.length() == 0
