@@ -1,40 +1,36 @@
 version: '3'
 
 services:
-  rdkit-search-api:
-    image: search-api
+  v2-uorsy:
+    image: uorsy-search
     build:
-      context: ./Api
-      dockerfile: ./RDKit/Dockerfile
+      context: ./ApiV2
+      dockerfile: ./Uorsy/Dockerfile
     ports:
-    - "5000:5000"
+    - "5001:5001"
     environment:
-    # - http_proxy='http://10.3.80.80:3128'
-    # - https_proxy='http://10.3.80.80:3128'
-    - ASPNETCORE_URLS=http://+:5000
-    - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=simsearch;Pooling=true;
+    - ASPNETCORE_URLS=http://+:5001
+    - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - mongo_connection=mongodb://mongo:27017
-    # network_mode: "host"
+    - mongo_dbname=uorsy
+    volumes:
+    - "~/logs/uorsy:/log"
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
     build:
       context: ./Docker.Rdkit
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     ports:
     - "5432:5432"
     # volumes:
     # - ~/rdkit-postgres-data:/var/lib/postgresql/data
-    # environment:
-    # - http_proxy=http://10.3.80.80:3128
-    # - https_proxy=http://10.3.80.80:3128
-    # network_mode: "host"
   java-oplusd:
     image: java-oplusd
     container_name: java-oplusd
     build:
       context: ./JavaOPlusD
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -48,7 +44,7 @@ services:
     container_name: oplusd-standalone
     build:
       context: ./OPlusD.Standalone
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -70,7 +66,6 @@ services:
   mongo:
     image: mongo:3.6
     container_name: mongo
-    # command: mongod --auth
     ports: 
       - "27017:27017"
     volumes:
@@ -98,3 +93,4 @@ services:
     - madfast_url=http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
     - mongo_connection=mongodb://mongo:27017
     - mongo_dbname=search_350m
+  
