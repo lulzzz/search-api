@@ -4,7 +4,7 @@ psql -h rdkit-postgres uorsy << EndCreate
 CREATE EXTENSION rdkit;
 CREATE TABLE mr (id SERIAL primary key, ref text, smiles text);
 EndCreate
-tail -n +2 ./src.txt | psql -h rdkit-postgres -d uorsy -c "COPY mr (smiles, ref) FROM STDIN WITH DELIMITER e'\t';"
+cat ./src.txt | psql -h rdkit-postgres -d uorsy -c "COPY mr (ref, smiles) FROM STDIN WITH DELIMITER e'\t';"
 psql -h rdkit-postgres uorsy << EOF
 create index raw_ref_idx on mr using hash(ref);
 select id, mol_from_smiles(smiles::cstring) mol, morganbv_fp(mol_from_smiles(smiles::cstring)) fp into ms from mr;
