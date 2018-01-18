@@ -2,14 +2,12 @@
 using SearchV2.Generics;
 using System;
 using System.Globalization;
-using System.Linq;
 using Uorsy.Data;
 
-namespace SearchV2.Uorsy.MongoBootstrapper
+namespace SearchV2.Uorsy.RedisBootstrapper
 {
     class Program
     {
-
         static MoleculeData FromString(string s)
         {
             var lineItems = s.Split('\t');
@@ -43,8 +41,8 @@ namespace SearchV2.Uorsy.MongoBootstrapper
 
         class Env
         {
-            public string MongoConnection { get; set; }
-            public string MongoDbname { get; set; }
+            public string RedisConnection { get; set; }
+            public int RedisDatabase { get; set; }
             public string CsvPath { get; set; }
         }
 
@@ -54,15 +52,16 @@ namespace SearchV2.Uorsy.MongoBootstrapper
 
             var env = EnvironmentHelper.Read<Env>();
 
-            MongoDB.MongoBootstrapper.Load<MoleculeData, string>(
-                connectionString: env.MongoConnection,
-                dbName: env.MongoDbname, 
+            SearchV2.Redis.RedisBootstrapper.Load<MoleculeData, string>(
+                connectionString: env.RedisConnection,
+                dbName: env.RedisDatabase,
                 items: CsvOps.LoadFromCsv<MoleculeData, string>(
                     path: env.CsvPath,
-                    factory: FromString).Skip(2399993),
+                    factory: FromString),
+                MoleculeData.Serializer,
                 drop: false).Wait();
 
-            
+
         }
     }
 }

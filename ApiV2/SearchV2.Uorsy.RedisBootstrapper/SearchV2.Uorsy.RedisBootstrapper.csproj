@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
-    <ProjectReference Include="..\SearchV2.MongoDB\SearchV2.MongoDB.csproj" />
+    <ProjectReference Include="..\SearchV2.Redis\SearchV2.Redis.csproj" />
     <ProjectReference Include="..\Uorsy.Data\Uorsy.Data.csproj" />
   </ItemGroup>
 

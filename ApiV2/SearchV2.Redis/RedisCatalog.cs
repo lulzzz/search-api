@@ -1,43 +1,42 @@
 ﻿using SearchV2.Abstractions;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SearchV2.Redis
 {
-    public class RedisCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> 
-        where TData : IWithReference<TId>
-        where TId : IRedisCacheKey
-        where TFilterQuery : IRedisFilterQuery
+    public class RedisCatalog<TFilterQuery, TData> : ICatalogDb<string, TFilterQuery, TData> 
+        where TData : IWithReference<string>
     {
-        readonly ICacheClient _cache;
+        readonly IDatabase _db;
+        readonly ISerializer<TData> _serializer;
+        readonly Func<TFilterQuery, Func<TData, bool>> _createFilterDelegate;
 
-        public RedisCatalog(string connectionString, int database)
+        public RedisCatalog(string connectionString, int database, ISerializer<TData> serializer, Func<TFilterQuery, Func<TData, bool>> createFilterDelegate)
         {
-            
+            _db = ConnectionMultiplexer.Connect(connectionString).GetDatabase(database);
+            _serializer = serializer;
+            _createFilterDelegate = createFilterDelegate;
         }
 
-        Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
+        async Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetAsync(IEnumerable<string> ids)
+            => (await _db.StringGetAsync(ids.Cast<RedisKey>().ToArray()))
+            .Select(v => _serializer.Deserialize(v))
+            .ToArray();
+
+        async Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<string> ids, TFilterQuery filters)
         {
-            throw new NotImplementedException();
+            var fulfillsFilter = _createFilterDelegate(filters);
+
+            return (await _db.StringGetAsync(ids.Cast<RedisKey>().ToArray()))
+                .Select(v => _serializer.Deserialize(v))
+                .Where(fulfillsFilter)
+                .ToArray();
         }
 
-        Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<TData> ICatalogDb<TId, TFilterQuery, TData>.OneAsync(TId id)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public interface IRedisFilterQuery
-    {
-    }
-
-    public interface IRedisCacheKey
-    {
+        async Task<TData> ICatalogDb<string, TFilterQuery, TData>.OneAsync(string id)
+            => _serializer.Deserialize(await _db.StringGetAsync(id));
     }
 }

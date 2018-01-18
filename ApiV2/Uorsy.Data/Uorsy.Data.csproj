@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SearchV2.Abstractions\SearchV2.Abstractions.csproj" />
+    <ProjectReference Include="..\SearchV2.Redis\SearchV2.Redis.csproj" />
   </ItemGroup>
 
 </Project>

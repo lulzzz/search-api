@@ -31,6 +31,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.ApiCore.SearchExtensions", "SearchV2.ApiCore.SearchExtensions\SearchV2.ApiCore.SearchExtensions.csproj", "{27C409DD-DE22-4183-A0AA-2570B42443A1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Redis", "SearchV2.Redis\SearchV2.Redis.csproj", "{510D6140-02B6-4A99-B3B3-A2048D0F60D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.Uorsy.RedisBootstrapper", "SearchV2.Uorsy.RedisBootstrapper\SearchV2.Uorsy.RedisBootstrapper.csproj", "{1A676DCE-61B2-4D81-8050-A8645788C21C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,14 @@ Global
 		{27C409DD-DE22-4183-A0AA-2570B42443A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27C409DD-DE22-4183-A0AA-2570B42443A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27C409DD-DE22-4183-A0AA-2570B42443A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +104,8 @@ Global
 		{CE9CC34A-4A53-4440-9F50-A049990CDF5E} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
 		{927217DC-6422-4E85-AA21-CABB0F50A517} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
 		{C2017327-4117-436F-BEA0-EC6F182ABD83} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
+		{510D6140-02B6-4A99-B3B3-A2048D0F60D3} = {9856D3A9-280B-400A-80B9-A03AD6D4AC59}
+		{1A676DCE-61B2-4D81-8050-A8645788C21C} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7CD67C-20C9-40B0-865E-A8E83817731A}
