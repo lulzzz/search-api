@@ -1,20 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SearchV2.Abstractions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 
 namespace SearchV2.ApiCore
 {
-    public sealed class SearchDescriptor
-    {
-        public Type TSearchQuery { get; set; }// _type.GetGenericArguments()[1];
-        public object SearchService { get; set; }
-        public string RouteSuffix { get; set; }
-    }
-
     public static class ControllerBuilder
     {
         static readonly ModuleBuilder mb = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("SearchV2.ApiCore.Dynamic"), AssemblyBuilderAccess.Run)
@@ -30,96 +23,95 @@ namespace SearchV2.ApiCore
                 TypeAttributes.AutoLayout |
                 TypeAttributes.Sealed,
                 null);
-        
-        public static TypeInfo CreateControllerClass<TId, TFilterQuery, TData>(ICatalogDb<TId, TFilterQuery, TData> catalog, params SearchDescriptor[] searches) where TData : IWithReference<TId>
+
+        public static TypeInfo CreateControllerClass(string routePrefix, params ActionDescriptor[] actions)
         {
-            var type = mb.CreateTypeBuilder("MoleculesController");
-            var baseType = typeof(ControllerCore<TId, TFilterQuery, TData>);
-            type.SetParent(baseType);
-            
-            var strategies = new(FieldInfo field, object impl)[searches.Length];
+            var type = mb.CreateTypeBuilder("MoleculesController"); // + Guid.NewGuid().ToString("N")
+            type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ControllerAttribute).GetConstructor(new Type[] { }), new object[] { }));
+            type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ValidateModelAttribute).GetConstructor(new Type[] { }), new object[] { }));
+            type.SetCustomAttribute(new CustomAttributeBuilder(typeof(RouteAttribute).GetConstructor(new Type[] { typeof(string) }), new object[] { routePrefix }));
 
-            for (int i = 0; i < searches.Length; i++)
+            var callTargets = new Dictionary<object, FieldInfo>(actions.Length);
+
+            for (int i = 0; i < actions.Length; i++)
             {
-                var item = searches[i];
-                var tSearchQuery = item.TSearchQuery;
-                var strategyType = typeof(ISearchService<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
-                var strategyField = type.DefineField("str" + i, strategyType, FieldAttributes.Private | FieldAttributes.Static);
-
-                var requestType = typeof(SearchRequest<,>).MakeGenericType(tSearchQuery, typeof(TFilterQuery));
-                var requestBodyType = requestType.GetNestedType("Body");
-
+                var action = actions[i];
+                var method = action.Implementation.Method;
+                var parameters = method.GetParameters();
                 var actionBuilder = type.DefineMethod(
-                    "Find" + i, 
-                    MethodAttributes.Public, 
+                    "Find" + i,
+                    MethodAttributes.Public,
                     CallingConventions.HasThis,
-                    typeof(Task<object>),
-                    new[] { requestType });
-                
-                actionBuilder.DefineParameter(1, ParameterAttributes.In, "request");
-                
+                    method.ReturnType,
+                    parameters.Select(pi => pi.ParameterType).ToArray());
+
                 actionBuilder.SetCustomAttribute(
                     new CustomAttributeBuilder(
-                        typeof(HttpPostAttribute).GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),
-                        new object[] { $"search/{item.RouteSuffix}" }));
-
-                var impl = baseType.GetMethod(ControllerCore<TId, TFilterQuery, TData>.ActionImplementationName).MakeGenericMethod(tSearchQuery);
-
+                        action.HttpMethod.MapToAttribute().GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),
+                        new object[] { action.Route }));
+                
                 var aIL = actionBuilder.GetILGenerator();
-                aIL.Emit(OpCodes.Ldsfld, strategyField);
-                aIL.Emit(OpCodes.Ldarg_1);
-                aIL.Emit(OpCodes.Call, impl);
+                
+                var target = action.Implementation;
+
+                FieldInfo field;
+                if (callTargets.ContainsKey(target))
+                {
+                    field = callTargets[target];
+                }
+                else
+                {
+                    field = type.DefineField("str" + i, target.GetType(), FieldAttributes.Private | FieldAttributes.Static);
+                    callTargets.Add(target, field);
+                }
+
+                aIL.Emit(OpCodes.Ldsfld, field);
+
+                for (int j = 0; j < parameters.Length; j++)
+                {
+                    var newParameter = actionBuilder.DefineParameter(j + 1, ParameterAttributes.In, parameters[j].Name);
+                    foreach (var attribute in parameters[j].CustomAttributes)
+                    {
+                        var namedArguments = attribute.NamedArguments.ToLookup(na => na.IsField);
+                        var namedProperties = namedArguments[false];
+                        var namedFields = namedArguments[true];
+
+                        newParameter.SetCustomAttribute(
+                            new CustomAttributeBuilder(
+                                attribute.Constructor,
+                                attribute.ConstructorArguments.Select(ca => ca.Value).ToArray(),
+                                namedProperties.Select(np => (PropertyInfo)np.MemberInfo).ToArray(),
+                                namedProperties.Select(np => np.TypedValue.Value).ToArray(),
+                                namedFields.Select(na => (FieldInfo)na.MemberInfo).ToArray(),
+                                namedFields.Select(na => na.TypedValue.Value).ToArray()
+                            )
+                        );
+                    }
+                    aIL.Emit(OpCodes.Ldarg, j + 1);
+                }
+                aIL.Emit(OpCodes.Callvirt, target.GetType().GetMethod("Invoke"));
                 aIL.Emit(OpCodes.Ret);
-
-                strategies[i] = (strategyField, item.SearchService);
             }
-
-            var constructor = type.DefineConstructor(
-                MethodAttributes.Public,
-                CallingConventions.Standard | CallingConventions.HasThis,
-                new[] { typeof(ICatalogDb<TId, TFilterQuery, TData>) });
-
-            var cIL = constructor.GetILGenerator();
-
-            var catalogField = baseType.GetField(ControllerCore<TId, TFilterQuery, TData>.CatPropName, BindingFlags.Instance | BindingFlags.NonPublic);
-
-            cIL.Emit(OpCodes.Ldarg_0);
-            cIL.Emit(OpCodes.Ldarg_1);
-            cIL.Emit(OpCodes.Stfld, catalogField);
-            cIL.Emit(OpCodes.Ret);
 
             var ti = type.CreateTypeInfo();
 
             var fields = ti.GetFields(BindingFlags.Static | BindingFlags.NonPublic);
 
-            foreach (var s in strategies)
+            foreach (var t in callTargets)
             {
-                var field = fields.First(f => f.Name == s.field.Name);
-                field.SetValue(null, s.impl);
+                var field = fields.First(f => f.Name == t.Value.Name);
+                field.SetValue(null, t.Key);
             }
 
             return ti;
         }
 
-        [Route("molecules")]
-        [ValidateModel]
-        public abstract class ControllerCore<TId, TFilterQuery, TData> where TData : IWithReference<TId>
-        {
-            protected ICatalogDb<TId, TFilterQuery, TData> _catalogDb;
+        static Type MapToAttribute(this HttpMethod m)
+            =>
+                m == HttpMethod.Get ? typeof(HttpGetAttribute)
+              : m == HttpMethod.Post ? typeof(HttpPostAttribute)
+              : Exception<Type>();
 
-            [HttpGet]
-            [Route("{id}")]
-            public Task<TData> One([FromRoute]TId id) => _catalogDb.OneAsync(id);
-
-            internal static string CatPropName => nameof(_catalogDb);
-            internal static string ActionImplementationName => nameof(FindInternal);
-
-            public static Task<object> FindInternal<TSearchQuery>(ISearchService<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery, TFilterQuery> request)
-                => s.FindAsync(
-                        request.Query.Search,
-                        request.Query.Filters,
-                        (request.PageNumber.Value - 1) * request.PageSize.Value,
-                        request.PageSize.Value);
-        }
+        static T Exception<T>(string message = null) where T : class => throw new NotImplementedException(message);
     }
 }

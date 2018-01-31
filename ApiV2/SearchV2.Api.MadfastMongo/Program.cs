@@ -3,41 +3,39 @@ using Microsoft.AspNetCore.Hosting;
 using System.Globalization;
 using SearchV2.Generics;
 using SearchV2.MongoDB;
+using static SearchV2.ApiCore.SearchExtensions.SearchApi;
+using SearchV2.ApiCore;
+using SearchV2.ApiCore.SearchExtensions;
 
 namespace SearchV2.Api.MadfastMongo
 {
+    using Common;
+    using SearchV2.Abstractions;
+    using static ActionDescriptor;
+    using static SearchApi;
+
     public class Program
     {
-        public static int Main(string[] args)
+        class Env
+        {
+            public string MongoConnection { get; set; }
+            public string MongoDbname { get; set; }
+            public string MadfastUrl { get; set; }
+        }
+
+        public static void Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 
-            var madfastUrl = Environment.GetEnvironmentVariable("madfast_url");
-            if (string.IsNullOrEmpty(madfastUrl))
-            {
-                Console.WriteLine("URL to the 'find-most-similars' endpoint of Madfast service must be passed as environment variable 'madfast_url'");
-                return 1;
-            }
+            var env = EnvironmentHelper.Read<Env>();
 
-            var mongoConnectionString = Environment.GetEnvironmentVariable("mongo_connection");
-            if (string.IsNullOrEmpty(mongoConnectionString))
-            {
-                Console.WriteLine("Connection string to MongoDB instance must be passed as environment variable 'mongo_connection'");
-                return 1;
-            }
+            ICatalogDb<string, FilterQuery, MoleculeData> catalog = new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, new FilterQuery.Creator());
+            var simSearch = CompositeSearchService.Compose(catalog, CachingSearchService.Wrap(new MadfastSimilaritySearchService(env.MadfastUrl, 1000), 1000));
 
-            var mongoDbName = Environment.GetEnvironmentVariable("mongo_dbname");
-            if (string.IsNullOrEmpty(mongoDbName))
-            {
-                Console.WriteLine("DB name must be passed as environment variable 'mongo_dbname'");
-                return 1;
-            }
-
-            ApiCore.Api.BuildHost(
-                new MongoCatalog<string, FilterQuery, MoleculeData>(mongoConnectionString, mongoDbName, new FilterQuery.Creator()),
-                ApiCore.Api.RegisterSearch("sim", CachingSearchService.Wrap(new MadfastSimilaritySearchService(madfastUrl, 1000), 1000))
-                ).Run();
-            return 0;
+            ApiCore.Api.BuildHost("molecules",
+                Get("{id}", (string id) => catalog.OneAsync(id)),
+                Post("sim", (SearchRequest<MadfastSearchQuery, FilterQuery> r) => Find(simSearch, r))
+            ).Run();
         }
     }
 }

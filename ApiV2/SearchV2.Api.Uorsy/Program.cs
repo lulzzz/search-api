@@ -1,14 +1,22 @@
 ﻿using Common;
 using Microsoft.AspNetCore.Hosting;
+using SearchV2.Abstractions;
+using SearchV2.ApiCore;
+using SearchV2.ApiCore.SearchExtensions;
 using SearchV2.Generics;
 using SearchV2.MongoDB;
 using SearchV2.RDKit;
-using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Uorsy.Data;
+
 
 namespace SearchV2.Api.Uorsy
 {
+    using static ActionDescriptor;
+    using static SearchApi;
+    using static CompositeSearchService;
+
     class Program
     {
         class Env
@@ -26,13 +34,20 @@ namespace SearchV2.Api.Uorsy
 
             var filterCreator = new FilterQuery.Creator();
 
-            ApiCore.Api.BuildHost(
-                new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, filterCreator),
-                ApiCore.Api.RegisterSearch("sub", CachingSearchService.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000)),
-                ApiCore.Api.RegisterSearch("sup", CachingSearchService.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000)),
-                ApiCore.Api.RegisterSearch("sim", RDKitSearchService.Similar(env.PostgresConnection, 1000)),
-                ApiCore.Api.RegisterSearch("smart", new MongoTextSearch<FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, nameof(MoleculeData.Ref), filterCreator))
-                ).Run();
+            ICatalogDb<string, FilterQuery, MoleculeData> catalog = new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, filterCreator);
+
+            var subSearch = Compose(catalog, CachingSearchService.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000));
+            var supSearch = Compose(catalog, CachingSearchService.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000));
+            var simSearch = Compose(catalog, RDKitSearchService.Similar(env.PostgresConnection, 1000));
+            var smartSearch = new MongoTextSearch<FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, nameof(MoleculeData.Ref), filterCreator);
+
+            ApiCore.Api.BuildHost("molecules",
+                Get("{id}", (string id) => catalog.OneAsync(id)),
+                Post("sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
+                Post("sup", (SearchRequest<string, FilterQuery> r) => Find(supSearch, r)),
+                Post("sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
+                Post("smart", (SearchRequest<string, FilterQuery> r) => Find(smartSearch, r))
+            ).Run();
         }
     }
 }

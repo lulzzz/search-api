@@ -5,7 +5,6 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
 using Swashbuckle.AspNetCore.Swagger;
 using Serilog;
-using Serilog.Configuration;
 using Serilog.Context;
 using Microsoft.AspNetCore.Http.Extensions;
 using System;
@@ -35,7 +34,7 @@ namespace SearchV2.ApiCore
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v2", new Info { Title = "ChemSearch API", Version = "v2" });
+                c.SwaggerDoc("v2.1", new Info { Title = "ChemSearch API", Version = "v2.1" });
             });
         }
 
@@ -48,7 +47,7 @@ namespace SearchV2.ApiCore
 
                 Log.Logger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
-                    .WriteTo.File("/searchV2_logs/log-.txt", rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2)
+                    .WriteTo.File("/searchV2_1_logs/log-.txt", rollingInterval: RollingInterval.Month, retainedFileCountLimit: 2)
                     .CreateLogger();
             }
             else
@@ -81,7 +80,7 @@ namespace SearchV2.ApiCore
                 .UseSwagger()
                 .UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v2/swagger.json", "ChemSearch API V2");
+                    c.SwaggerEndpoint("/swagger/v2.1/swagger.json", "ChemSearch API V2.1");
                 });
         }
     }

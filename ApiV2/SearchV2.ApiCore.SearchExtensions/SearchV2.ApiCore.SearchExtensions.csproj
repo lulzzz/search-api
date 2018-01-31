@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -9,14 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\SearchV2.Abstractions\SearchV2.Abstractions.csproj" />
-    <ProjectReference Include="..\SearchV2.ApiCore.SearchExtensions\SearchV2.ApiCore.SearchExtensions.csproj" />
     <ProjectReference Include="..\SearchV2.ApiCore\SearchV2.ApiCore.csproj" />
     <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
-    <ProjectReference Include="..\SearchV2.MongoDB\SearchV2.MongoDB.csproj" />
-    <ProjectReference Include="..\SearchV2.RDKit\SearchV2.RDKit.csproj" />
-    <ProjectReference Include="..\Uorsy.Data\Uorsy.Data.csproj" />
   </ItemGroup>
 
 </Project>

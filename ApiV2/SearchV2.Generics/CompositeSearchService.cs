@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Generics
 {
-    public class CompositeSearchService<TId, TSearchQuery, TFilterQuery, TSearchResult, TData> 
+    internal class CompositeSearchService<TId, TSearchQuery, TFilterQuery, TSearchResult, TData> 
         : ISearchService<TSearchQuery, TFilterQuery> 
         where TData : IWithReference<TId>
         where TSearchResult : IWithReference<TId>
@@ -15,7 +15,7 @@ namespace SearchV2.Generics
         readonly ICatalogDb<TId, TFilterQuery, TData> _catalog;
         readonly ISearchComponent<TId, TSearchQuery, TSearchResult> _search;
 
-        public CompositeSearchService(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchComponent<TId, TSearchQuery, TSearchResult> search)
+        internal CompositeSearchService(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchComponent<TId, TSearchQuery, TSearchResult> search)
         {
             _catalog = catalog;
             _search = search;
@@ -135,5 +135,16 @@ namespace SearchV2.Generics
                 }
             }
         }
+    }
+
+    public static class CompositeSearchService
+    {
+        public static ISearchService<TSearchQuery, TFilterQuery> Compose<TId, TSearchQuery, TFilterQuery, TSearchResult, TData>(
+            ICatalogDb<TId, TFilterQuery, TData> catalog, 
+            ISearchComponent<TId, TSearchQuery, TSearchResult> search
+        )
+            where TData : IWithReference<TId>
+            where TSearchResult : IWithReference<TId>
+            => new CompositeSearchService<TId, TSearchQuery, TFilterQuery, TSearchResult, TData>(catalog, search);
     }
 }
