@@ -52,13 +52,13 @@ namespace SearchV2.Uorsy.RedisBootstrapper
 
             var env = EnvironmentHelper.Read<Env>();
 
-            SearchV2.Redis.RedisBootstrapper.Load<MoleculeData, string>(
+            Redis.RedisBootstrapper.Load<MoleculeData>(
                 connectionString: env.RedisConnection,
-                dbName: env.RedisDatabase,
+                database: env.RedisDatabase,
                 items: CsvOps.LoadFromCsv<MoleculeData, string>(
                     path: env.CsvPath,
                     factory: FromString),
-                MoleculeData.Serializer,
+                serializer: MoleculeData.Serializer,
                 drop: false).Wait();
 
 

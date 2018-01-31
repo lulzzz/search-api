@@ -14,6 +14,7 @@
     <ProjectReference Include="..\SearchV2.ApiCore.SearchExtensions\SearchV2.ApiCore.SearchExtensions.csproj" />
     <ProjectReference Include="..\SearchV2.ApiCore\SearchV2.ApiCore.csproj" />
     <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
+    <ProjectReference Include="..\SearchV2.InMemory\SearchV2.InMemory.csproj" />
     <ProjectReference Include="..\SearchV2.MongoDB\SearchV2.MongoDB.csproj" />
     <ProjectReference Include="..\SearchV2.RDKit\SearchV2.RDKit.csproj" />
     <ProjectReference Include="..\Uorsy.Data\Uorsy.Data.csproj" />

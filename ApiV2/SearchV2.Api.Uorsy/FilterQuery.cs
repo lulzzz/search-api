@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using SearchV2.MongoDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Uorsy.Data;
@@ -17,7 +18,7 @@ namespace SearchV2.Api.Uorsy
         public Filter<double>? Fsp3 { get; set; }
         public Filter<int>? Hac { get; set; }
 
-        public struct Filter<T> where T : struct
+        public struct Filter<T> where T : struct, IComparable<T>
         {
             public T? Min { get; set; }
             public T? Max { get; set; }

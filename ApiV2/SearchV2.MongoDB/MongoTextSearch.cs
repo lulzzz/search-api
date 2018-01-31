@@ -39,6 +39,5 @@ namespace SearchV2.MongoDB
 
             return res.Select(r => r.ToDictionary());
         }
-        
     }
 }
