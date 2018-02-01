@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Generics
 {
-    public static class CachingSearchService
+    public static class CachingSearchComponent
     {
         public static ISearchComponent<TId, TSearchQuery, TSearchResult> Wrap<TId, TSearchQuery, TSearchResult>(this ISearchComponent<TId, TSearchQuery, TSearchResult> service, int maxCount)
             where TSearchResult : IWithReference<TId>

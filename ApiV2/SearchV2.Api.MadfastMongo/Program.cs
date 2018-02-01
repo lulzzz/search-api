@@ -30,7 +30,7 @@ namespace SearchV2.Api.MadfastMongo
             var env = EnvironmentHelper.Read<Env>();
 
             ICatalogDb<string, FilterQuery, MoleculeData> catalog = new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, new FilterQuery.Creator());
-            var simSearch = CompositeSearchService.Compose(catalog, CachingSearchService.Wrap(new MadfastSimilaritySearchService(env.MadfastUrl, 1000), 1000));
+            var simSearch = CompositeSearchService.Compose(catalog, CachingSearchComponent.Wrap(new MadfastSimilaritySearchService(env.MadfastUrl, 1000), 1000));
 
             ApiCore.Api.BuildHost("molecules",
                 Get("{id}", (string id) => catalog.OneAsync(id)),

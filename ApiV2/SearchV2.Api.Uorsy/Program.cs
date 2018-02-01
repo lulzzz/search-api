@@ -7,7 +7,6 @@ using SearchV2.Generics;
 using SearchV2.MongoDB;
 using SearchV2.RDKit;
 using System.Globalization;
-using System.Threading.Tasks;
 using Uorsy.Data;
 
 
@@ -36,8 +35,8 @@ namespace SearchV2.Api.Uorsy
 
             ICatalogDb<string, FilterQuery, MoleculeData> catalog = new MongoCatalog<string, FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, filterCreator);
 
-            var subSearch = Compose(catalog, CachingSearchService.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000));
-            var supSearch = Compose(catalog, CachingSearchService.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000));
+            var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000));
+            var supSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Superstructure(env.PostgresConnection, 1000), 1000));
             var simSearch = Compose(catalog, RDKitSearchService.Similar(env.PostgresConnection, 1000));
             var smartSearch = new MongoTextSearch<FilterQuery, MoleculeData>(env.MongoConnection, env.MongoDbname, nameof(MoleculeData.Ref), filterCreator);
 
