@@ -93,4 +93,14 @@ services:
     - madfast_url=http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
     - mongo_connection=mongodb://mongo:27017
     - mongo_dbname=search_350m
-  
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ~/redis-data:/data
+    entrypoint: redis-server --appendonly yes
+    restart: always
+
+    
