@@ -107,9 +107,11 @@ services:
     image: openjdk:8u151-jre
     ports:
       - "8085:8085"
-    volumes:
+    volumes: # these are just taken from fs
       - ~/madfast:/app
-      - ~/.chemaxon:~/.chemaxon
+      - ~/.chemaxon:/license
+    environment:
+      - CHEMAXON_LICENSE_URL=/license/license.cxl
     entrypoint: /app/examples/rest-api-small_ecfp4.sh
 
     
