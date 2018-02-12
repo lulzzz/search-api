@@ -104,7 +104,7 @@ services:
     restart: always
   madfast:
     container_name: madfast
-    image: openjdk:8u151-jre-alpine
+    image: openjdk:8u151-jre
     ports:
       - "8085:8085"
     volumes:
