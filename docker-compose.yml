@@ -90,7 +90,7 @@ services:
     - "5000:5000"
     environment:
     - ASPNETCORE_URLS=http://+:5000
-    - madfast_url=http://10.3.28.43:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
+    - madfast_url=http://madfast:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
     - mongo_connection=mongodb://mongo:27017
     - mongo_dbname=search_350m
   redis:
@@ -102,5 +102,13 @@ services:
       - ~/redis-data:/data
     entrypoint: redis-server --appendonly yes
     restart: always
+  madfast:
+    container_name: madfast
+    image: openjdk:8u151-jre-alpine
+    ports:
+      - "8085:8085"
+    volumes:
+      - ~/madfast:/app
+    entrypoint: /app/examples/rest-api-small_ecfp4.sh
 
     
