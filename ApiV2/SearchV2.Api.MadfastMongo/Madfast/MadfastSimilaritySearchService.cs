@@ -40,7 +40,7 @@ namespace SearchV2.Api.MadfastMongo
                 pushState => 
                     Task.Run(() =>
                         {
-                            async Task LoadAndUpdate(int count, Func<int, Task> nextFactory)
+                            async Task LoadAndUpdate(int count, int skip, Func<int, Task> nextFactory)
                             {
                                 var r = await _httpClient.PostAsync(_url, new FormUrlEncodedContent(new Dictionary<string, string>
                                 {
@@ -53,6 +53,7 @@ namespace SearchV2.Api.MadfastMongo
                                     ? JsonConvert
                                         .DeserializeObject<MadfastQueryResult>(await r.Content.ReadAsStringAsync())
                                         .Targets
+                                        .Skip(skip)
                                         .Select(t => new MadfastResultItem { Ref = t.Targetid, Similarity = 1.0 - t.Dissimilarity })
                                         .ToList()
                                     : Enumerable.Empty<MadfastResultItem>();
@@ -60,7 +61,7 @@ namespace SearchV2.Api.MadfastMongo
                                 pushState(nextFactory?.Invoke(res.Count()), res);
                             }
 
-                            return LoadAndUpdate(fastFetchCount, count => count < _hitLimit ? LoadAndUpdate(_hitLimit, null) : null);
+                            return LoadAndUpdate(fastFetchCount, 0, count => count < _hitLimit ? LoadAndUpdate(_hitLimit, count, null) : null);
                         }
                     )
             )

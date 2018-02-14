@@ -33,8 +33,8 @@ namespace SearchV2.Api.MadfastMongo
             var simSearch = CompositeSearchService.Compose(catalog, CachingSearchComponent.Wrap(new MadfastSimilaritySearchService(env.MadfastUrl, 1000), 1000));
 
             ApiCore.Api.BuildHost("molecules",
-                Get("{id}", (string id) => catalog.OneAsync(id)),
-                Post("sim", (SearchRequest<MadfastSearchQuery, FilterQuery> r) => Find(simSearch, r))
+                Post("sim", (SearchRequest<MadfastSearchQuery, FilterQuery> r) => Find(simSearch, r)),
+                Get("{id}", (string id) => catalog.OneAsync(id))
             ).Run();
         }
     }
