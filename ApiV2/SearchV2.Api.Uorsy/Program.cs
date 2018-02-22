@@ -38,6 +38,7 @@ namespace SearchV2.Api.Uorsy
             var mols = ReadFromFile(env.PathToCsvSource).Where(md => checker.Add(md.Ref)).ToArray();
             checker = null;
 
+#warning this is a bug "filter => data => true"
             ICatalogDb<string, FilterQuery, MoleculeData> catalog = new InMemoryCatalogDb<string, FilterQuery, MoleculeData>(mols, filter => data => true);
 
             var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000));
