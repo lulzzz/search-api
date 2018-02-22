@@ -11,9 +11,10 @@ services:
     environment:
     - ASPNETCORE_URLS=http://+:5001
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
-    - path_to_csv_source=~/kos/uorsy.csv
+    - path_to_csv_source=/data/uorsy.csv
     volumes:
     - "~/logs/uorsy:/log"
+    - "~/kos/uorsy:/data"
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
