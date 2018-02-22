@@ -11,8 +11,7 @@ services:
     environment:
     - ASPNETCORE_URLS=http://+:5001
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
-    - mongo_connection=mongodb://mongo:27017
-    - mongo_dbname=uorsy
+    - path_to_csv_source=~/kos/uorsy.csv
     volumes:
     - "~/logs/uorsy:/log"
   rdkit-postgres:

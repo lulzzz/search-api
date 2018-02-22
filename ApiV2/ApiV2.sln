@@ -29,13 +29,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Uorsy.Data", "Uorsy.Data\Uo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{BBE0FC65-4173-484F-956B-15E811997617}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.InMemory", "SearchV2.InMemory\SearchV2.InMemory.csproj", "{C9FFBCE4-EFFD-48D5-A99F-B6A72C5AE770}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.InMemory", "SearchV2.InMemory\SearchV2.InMemory.csproj", "{C9FFBCE4-EFFD-48D5-A99F-B6A72C5AE770}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.ApiCore.SearchExtensions", "SearchV2.ApiCore.SearchExtensions\SearchV2.ApiCore.SearchExtensions.csproj", "{27C409DD-DE22-4183-A0AA-2570B42443A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.ApiCore.SearchExtensions", "SearchV2.ApiCore.SearchExtensions\SearchV2.ApiCore.SearchExtensions.csproj", "{27C409DD-DE22-4183-A0AA-2570B42443A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Redis", "SearchV2.Redis\SearchV2.Redis.csproj", "{510D6140-02B6-4A99-B3B3-A2048D0F60D3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchV2.Uorsy.RedisBootstrapper", "SearchV2.Uorsy.RedisBootstrapper\SearchV2.Uorsy.RedisBootstrapper.csproj", "{1A676DCE-61B2-4D81-8050-A8645788C21C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,10 +93,6 @@ Global
 		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{510D6140-02B6-4A99-B3B3-A2048D0F60D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A676DCE-61B2-4D81-8050-A8645788C21C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,7 +106,6 @@ Global
 		{C2017327-4117-436F-BEA0-EC6F182ABD83} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
 		{C9FFBCE4-EFFD-48D5-A99F-B6A72C5AE770} = {9856D3A9-280B-400A-80B9-A03AD6D4AC59}
 		{510D6140-02B6-4A99-B3B3-A2048D0F60D3} = {9856D3A9-280B-400A-80B9-A03AD6D4AC59}
-		{1A676DCE-61B2-4D81-8050-A8645788C21C} = {D59F28FB-D856-468A-B850-1C00A8669AF0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7CD67C-20C9-40B0-865E-A8E83817731A}

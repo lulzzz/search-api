@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-using SearchV2.MongoDB;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Uorsy.Data;
@@ -54,35 +52,6 @@ namespace SearchV2.Api.Uorsy
             if (Tpsa.HasValue) yield return Tpsa.Value.ToNamed(nameof(Tpsa));
             if (Fsp3.HasValue) yield return Fsp3.Value.ToNamed(nameof(Fsp3));
             if (Hac.HasValue) yield return Hac.Value.ToNamed(nameof(Hac));
-        }
-
-        public class Creator : IFilterCreator<FilterQuery, MoleculeData>
-        {
-            readonly FilterDefinitionBuilder<MoleculeData> _builder = Builders<MoleculeData>.Filter;
-
-            FilterDefinition<MoleculeData> IFilterCreator<FilterQuery, MoleculeData>.Create(FilterQuery filters)
-            {
-                return filters.Enumerate().SelectMany(BuildFilter).Aggregate(_builder.Empty, (acc, item) => acc & item);
-            }
-
-            IEnumerable<FilterDefinition<MoleculeData>> BuildFilter(NamedFilter val)
-            {
-                if (val.Min == val.Max && val.Min != null)
-                {
-                    yield return _builder.Eq(val.Name, val.Min);
-                }
-                else
-                {
-                    if (val.Min != null)
-                    {
-                        yield return _builder.Gte(val.Name, val.Min);
-                    }
-                    if (val.Max != null)
-                    {
-                        yield return _builder.Lte(val.Name, val.Max);
-                    }
-                }
-            }
         }
     }
 }
