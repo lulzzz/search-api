@@ -20,15 +20,21 @@ namespace SearchV2.InMemory
             _filterToPredicate = filterCreator;
         }
 
+        private IEnumerable<TData> GetAsync(IEnumerable<TId> ids)
+            => ids.Select(id => _dictionary.TryGetValue(id, out TData data) ? data : null);
+
         Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
-        => Task.FromResult(ids.Select(id => _dictionary.TryGetValue(id, out TData data) ? data : null));
+            => Task.FromResult(GetAsync(ids));
 
         Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
         {
+            if (filters == null)
+            {
+                return Task.FromResult(GetAsync(ids));
+            }
             var filterFunc = _filterToPredicate(filters);
             return Task.FromResult(
-                ids
-                    .Select(id => _dictionary.TryGetValue(id, out TData data) ? data : null)
+                GetAsync(ids)
                     .Where(d => d != null && filterFunc(d))
                 );
         }

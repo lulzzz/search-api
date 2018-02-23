@@ -20,38 +20,59 @@ namespace SearchV2.Api.Uorsy
         {
             public T? Min { get; set; }
             public T? Max { get; set; }
+        }
+        
+        
+#warning should be reflection and should not be here
+        public IEnumerable<Func<MoleculeData, bool>> Enumerate()
+        {
+            if (Mw.HasValue) foreach (var f in BuildFilter(md => md.Mw, Mw.Value)) yield return f;
+            if (Logp.HasValue) foreach (var f in BuildFilter(md => md.Logp, Logp.Value)) yield return f;
+            if (Hba.HasValue) foreach (var f in BuildFilter(md => md.Hba, Hba.Value)) yield return f;
+            if (Hbd.HasValue) foreach (var f in BuildFilter(md => md.Hbd, Hbd.Value)) yield return f;
+            if (Rotb.HasValue) foreach (var f in BuildFilter(md => md.Rotb, Rotb.Value)) yield return f;
+            if (Tpsa.HasValue) foreach (var f in BuildFilter(md => md.Tpsa, Tpsa.Value)) yield return f;
+            if (Fsp3.HasValue) foreach (var f in BuildFilter(md => md.Fsp3, Fsp3.Value)) yield return f;
+            if (Hac.HasValue) foreach (var f in BuildFilter(md => md.Hac, Hac.Value)) yield return f;
+        }
 
-            public NamedFilter ToNamed(string name)
-            => new NamedFilter
+        public static Func<MoleculeData, bool> CreateFilterDelegate(FilterQuery filters)
+        {
+            var predicates = filters.Enumerate().ToArray();
+            if(predicates.Length == 0)
             {
-                Name = name,
-                Max = Max.HasValue ? (object)Max.Value : null,
-                Min = Min.HasValue ? (object)Min.Value : null
+                return md => true;
+            }
+            return md =>
+            {
+                foreach (var p in predicates)
+                {
+                    if (!p(md)) return false;
+                }
+                return true;
             };
         }
 
-        public struct NamedFilter
+        IEnumerable<Func<MoleculeData, bool>> BuildFilter<T>(Func<MoleculeData, T> fieldSelector, Filter<T> val) where T : struct, IComparable<T>
         {
-            public string Name { get; set; }
-
-            public object Min { get; set; }
-            public object Max { get; set; }
-        }
-
-        //bool IFilterQuery.Empty
-        //=> !(Mw.HasValue || Logp.HasValue || Hba.HasValue || Hbd.HasValue || Rotb.HasValue || Tpsa.HasValue || Fsp3.HasValue || Hac.HasValue);
-
-#warning should be reflection and should not be here
-        public IEnumerable<NamedFilter> Enumerate()
-        {
-            if (Mw.HasValue) yield return Mw.Value.ToNamed(nameof(Mw));
-            if (Logp.HasValue) yield return Logp.Value.ToNamed(nameof(Logp));
-            if (Hba.HasValue) yield return Hba.Value.ToNamed(nameof(Hba));
-            if (Hbd.HasValue) yield return Hbd.Value.ToNamed(nameof(Hbd));
-            if (Rotb.HasValue) yield return Rotb.Value.ToNamed(nameof(Rotb));
-            if (Tpsa.HasValue) yield return Tpsa.Value.ToNamed(nameof(Tpsa));
-            if (Fsp3.HasValue) yield return Fsp3.Value.ToNamed(nameof(Fsp3));
-            if (Hac.HasValue) yield return Hac.Value.ToNamed(nameof(Hac));
+            if (val.Min.HasValue && val.Max.HasValue && val.Min.Value.CompareTo(val.Max.Value) == 0)
+            {
+                var eqVal = val.Min.Value;
+                yield return md => fieldSelector(md).CompareTo(eqVal) == 0;
+            }
+            else
+            {
+                if (val.Min.HasValue)
+                {
+                    var minVal = val.Min.Value;
+                    yield return md => fieldSelector(md).CompareTo(minVal) >= 0;
+                }
+                if (val.Max.HasValue)
+                {
+                    var maxValue = val.Max.Value;
+                    yield return md => fieldSelector(md).CompareTo(maxValue) <= 0;
+                }
+            }
         }
     }
 }

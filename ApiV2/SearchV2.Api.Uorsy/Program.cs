@@ -36,10 +36,9 @@ namespace SearchV2.Api.Uorsy
 
             var checker = new HashSet<string>();
             var mols = ReadFromFile(env.PathToCsvSource).Where(md => checker.Add(md.Ref)).ToArray();
-            checker = null;
 
 #warning this is a bug "filter => data => true"
-            ICatalogDb<string, FilterQuery, MoleculeData> catalog = new InMemoryCatalogDb<string, FilterQuery, MoleculeData>(mols, filter => data => true);
+            ICatalogDb<string, FilterQuery, MoleculeData> catalog = new InMemoryCatalogDb<string, FilterQuery, MoleculeData>(mols, FilterQuery.CreateFilterDelegate);
 
             var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, 1000), 1000));
             var simSearch = Compose(catalog, RDKitSearchService.Similar(env.PostgresConnection, 1000));
@@ -51,7 +50,7 @@ namespace SearchV2.Api.Uorsy
                 //Get("exact", (string r) => Find(subSearch, r)),
                 Post("sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r))
-                //Post("text", (IEnumerable<string> r) => smartSearch.)
+                //Post("text", (IEnumerable<string> r) => smartSearch)
             ).Run();
         }
 

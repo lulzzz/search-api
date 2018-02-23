@@ -21,4 +21,16 @@ namespace SearchV2.ApiCore
         [FromBody, Required]
         public Body Query { get; set; }
     }
+
+    public class SearchRequest<TSearchQuery>
+    {
+        [FromQuery]
+        public int? PageSize { get; set; } = 12;
+
+        [FromQuery]
+        public int? PageNumber { get; set; } = 1;
+
+        [FromBody, Required]
+        public TSearchQuery Query { get; set; }
+    }
 }
