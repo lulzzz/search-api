@@ -7,39 +7,60 @@ using System.Threading.Tasks;
 
 namespace SearchV2.InMemory
 {
-    public class InMemoryCatalogDb<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> where TData : class, IWithReference<TId>
+    public class InMemoryCatalogDb<TFilterQuery, TData> : ICatalogDb<string, TFilterQuery, TData> where TData : class, IWithReference<string>
     {
         public delegate Func<TData, bool> FilterCreatorDelegate(TFilterQuery filters);
 
-        readonly Dictionary<TId, TData> _dictionary;
+        readonly TData[] _data;
+        readonly Dictionary<string, List<int>> _dictionary;
         readonly FilterCreatorDelegate _filterToPredicate;
 
-        public InMemoryCatalogDb(IEnumerable<TData> data, FilterCreatorDelegate filterCreator)
+        public InMemoryCatalogDb(IEnumerable<TData> data, FilterCreatorDelegate filterCreator, params Func<TData, string>[] keySelectors)
         {
-            _dictionary = data.ToDictionary(d => d.Ref);
+            _data = data.ToArray();
+            _dictionary = new Dictionary<string, List<int>>(_data.Length);
+            for (int i = 0; i < _data.Length; i++)
+            {
+                foreach (var s in keySelectors)
+                {
+                    var key = s(_data[i]);
+                    if(key != null)
+                    {
+                        if(_dictionary.TryGetValue(key, out List<int> existing))
+                        {
+                            _dictionary[key].Add(i);
+                        }
+                        else
+                        {
+                            _dictionary[key] = new List<int>(1) { i };
+                        }
+                    }
+                }
+            }
             _filterToPredicate = filterCreator;
         }
 
-        private IEnumerable<TData> GetAsync(IEnumerable<TId> ids)
-            => ids.Select(id => _dictionary.TryGetValue(id, out TData data) ? data : null);
+        static readonly IEnumerable<TData> _empty = Enumerable.Empty<TData>();
+        private IEnumerable<TData> GetAsync(IEnumerable<string> ids)
+            => ids.SelectMany(id => _dictionary.TryGetValue(id, out List<int> dataIndexes) ? dataIndexes.Select(ind => _data[ind]) : _empty);
 
-        Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
-            => Task.FromResult(GetAsync(ids));
+        Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetAsync(IEnumerable<string> keys)
+            => Task.FromResult(GetAsync(keys));
 
-        Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
+        Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<string> keys, TFilterQuery filters)
         {
             if (filters == null)
             {
-                return Task.FromResult(GetAsync(ids));
+                return Task.FromResult(GetAsync(keys));
             }
             var filterFunc = _filterToPredicate(filters);
             return Task.FromResult(
-                GetAsync(ids)
+                GetAsync(keys)
                     .Where(d => d != null && filterFunc(d))
                 );
         }
 
-        Task<TData> ICatalogDb<TId, TFilterQuery, TData>.OneAsync(TId id)
-        => Task.FromResult(_dictionary.TryGetValue(id, out TData data) ? data : null);
+        Task<TData> ICatalogDb<string, TFilterQuery, TData>.OneAsync(string id)
+            => Task.FromResult(_dictionary.TryGetValue(id, out List<int> dataIndexes) ? _data[dataIndexes.First()] : null);
     }
 }

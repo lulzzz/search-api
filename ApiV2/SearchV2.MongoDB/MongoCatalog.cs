@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using SearchV2.Abstractions;
 using System.Collections.Generic;
 using System.Linq;

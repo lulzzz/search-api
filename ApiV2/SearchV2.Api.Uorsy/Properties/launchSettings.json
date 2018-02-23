@@ -16,7 +16,7 @@
         "mongo_connection": "mongodb://10.3.28.43:27017",
         "postgres_connection": "User ID=postgres;Host=10.3.28.43;Port=5432;Database=uorsy;Pooling=true;",
         "mongo_dbname": "uorsy",
-        "path_to_csv_source": "D:\\linux_share\\Bases\\UORSY_key.txt",
+        "path_to_csv_source": "D:\\linux_share\\Bases\\UORSY_max.txt",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
