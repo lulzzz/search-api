@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 
 namespace SearchV2.ApiCore
@@ -19,7 +18,7 @@ namespace SearchV2.ApiCore
         [FromQuery]
         public int? PageNumber { get; set; } = 1;
 
-        [FromBody, BindRequired]
+        [FromBody, Required]
         public Body Query { get; set; }
     }
 
@@ -31,7 +30,7 @@ namespace SearchV2.ApiCore
         [FromQuery]
         public int? PageNumber { get; set; } = 1;
 
-        [FromBody, BindRequired]
+        [FromBody, Required]
         public TSearchQuery Query { get; set; }
     }
 }

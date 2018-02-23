@@ -7,7 +7,7 @@ using System.Linq;
 namespace SearchV2.ApiCore
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    class ValidateModelAttribute : Attribute, IActionFilter
+    public class ValidateModelAttribute : Attribute, IActionFilter
     {
         public void OnActionExecuted(ActionExecutedContext context)
         { }
