@@ -13,6 +13,8 @@ namespace SearchV2.ApiCore
         //public object ImplementationTarget { get; private set; }
 
         public static ActionDescriptor Get<TIn, TOut>(string route, Func<TIn, TOut> action) => Make(route, HttpMethod.Get, action);
+        public static ActionDescriptor Get<TOut>(string route, Func<TOut> action) => Make(route, HttpMethod.Get, action);
+
         public static ActionDescriptor Post<TIn, TOut>(string route, Func<TIn, TOut> action) => Make(route, HttpMethod.Post, action);
 
         //public static ActionDescriptor Make<TIn, TOut>(string route, HttpMethod httpMethod, Func<TIn, TOut> action) => Make(route, httpMethod, action);

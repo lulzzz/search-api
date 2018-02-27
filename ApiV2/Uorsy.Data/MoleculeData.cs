@@ -24,6 +24,8 @@ namespace Uorsy.Data
         public string Cas { get; set; }
         public string Mfcd { get; set; }
 
+        public int PriceCategory { get; set; }
+
         public static IEnumerable<MoleculeData> ReadFromFile(string path)
         {
             using (var reader = new StreamReader(path))
@@ -58,6 +60,7 @@ namespace Uorsy.Data
             {
                 mfcd = null;
             }
+            var pc = int.Parse(lineItems[10]);
 
             var md = new MoleculeData
             {
@@ -74,7 +77,8 @@ namespace Uorsy.Data
                 Hac = hac,
                 InChIKey = lineItems[11],
                 Cas = cas,
-                Mfcd = mfcd
+                Mfcd = mfcd,
+                PriceCategory = pc
             };
 
             return md;
