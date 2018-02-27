@@ -12,7 +12,7 @@ services:
     - ASPNETCORE_URLS=http://+:5001
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
-    - path_to_csv_source=/data/pricingCat.csv
+    - path_to_price_cats=/data/pricingCat.csv
     volumes:
     - "~/logs/uorsy:/log"
     - "~/kos/uorsy:/data"
