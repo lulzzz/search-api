@@ -19,6 +19,7 @@ namespace Uorsy.Data
         public double Tpsa { get; set; }
         public double Fsp3 { get; set; }
         public int Hac { get; set; }
+        public int RingCount { get; set; }
 
         public string InChIKey { get; set; }
         public string Cas { get; set; }
@@ -60,7 +61,7 @@ namespace Uorsy.Data
             {
                 mfcd = null;
             }
-            var pc = int.Parse(lineItems[10]);
+            var pc = int.Parse(lineItems[14]);
 
             var md = new MoleculeData
             {
@@ -78,7 +79,8 @@ namespace Uorsy.Data
                 InChIKey = lineItems[11],
                 Cas = cas,
                 Mfcd = mfcd,
-                PriceCategory = pc
+                PriceCategory = pc,
+                RingCount = int.Parse(lineItems[15])
             };
 
             return md;
