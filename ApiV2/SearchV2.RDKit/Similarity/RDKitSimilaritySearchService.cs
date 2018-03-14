@@ -36,7 +36,7 @@ namespace SearchV2.RDKit
             var t = con.BeginTransaction();
 
             var setCommand = con.CreateCommand();
-            setCommand.CommandText = string.Format(setThresholdQuery, query.SimilarityThreshold);
+            setCommand.CommandText = string.Format(setThresholdQuery, query.SimilarityThreshold ?? 0.3);
             var setTask = setCommand.ExecuteNonQueryAsync();
 
             var searchCommand = con.CreateCommand();

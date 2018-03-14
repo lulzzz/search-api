@@ -24,6 +24,12 @@ namespace SearchV2.ApiCore
 
     public class SearchRequest<TSearchQuery>
     {
+        public class Body
+        {
+            [Required]
+            public TSearchQuery Search { get; set; }
+        }
+
         [FromQuery]
         public int? PageSize { get; set; } = 12;
 
@@ -31,6 +37,6 @@ namespace SearchV2.ApiCore
         public int? PageNumber { get; set; } = 1;
 
         [FromBody, Required]
-        public TSearchQuery Query { get; set; }
+        public Body Query { get; set; }
     }
 }
