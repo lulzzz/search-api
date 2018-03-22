@@ -29,7 +29,10 @@ namespace SearchV2.ApiCore
             var type = mb.CreateTypeBuilder("MoleculesController"); // + Guid.NewGuid().ToString("N")
             type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ControllerAttribute).GetConstructor(new Type[] { }), new object[] { }));
             type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ValidateModelAttribute).GetConstructor(new Type[] { }), new object[] { }));
-            type.SetCustomAttribute(new CustomAttributeBuilder(typeof(RouteAttribute).GetConstructor(new Type[] { typeof(string) }), new object[] { routePrefix }));
+            if (!string.IsNullOrEmpty(routePrefix))
+            {
+                type.SetCustomAttribute(new CustomAttributeBuilder(typeof(RouteAttribute).GetConstructor(new Type[] { typeof(string) }), new object[] { routePrefix }));
+            }
 
             var callTargets = new Dictionary<object, FieldInfo>(actions.Length);
 

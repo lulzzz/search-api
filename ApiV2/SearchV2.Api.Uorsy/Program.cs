@@ -49,16 +49,19 @@ namespace SearchV2.Api.Uorsy
             var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, hitLimit), 1000));
             var simSearch = Compose(catalog, RDKitSearchService.Similar(env.PostgresConnection, hitLimit));
 
-            ApiCore.Api.BuildHost("molecules",
-                Get("{id}", (string id) => catalog.OneAsync(id)),
+            ApiCore.Api.BuildHost("",
+                Get("molecules/{id}", (string id) => catalog.OneAsync(id)),
 #warning needs smiles->inchi conversion
-                Post("exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => new { Data = new[] { t.Result } })),
-                Post("sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
-                Post("sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
+                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => new { Data = new[] { t.Result } })),
+                Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
+                Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion
-                Post("text", async (SearchRequest<IEnumerable<string>> r) => (await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value)),
+                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => (await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value)),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories)
+                //Post("make-ids-list", (IEnumerable<string> ids) => makeFileResponse(ids)),
+                //Post("get-sdf", (IEnumerable<string> ids) => makeFileResponse(createSdf(ids))),
+                //Post("inquire", (IEnumerable<InquiryItem>) => sendEmail())
             ).Run();
         }
     }
