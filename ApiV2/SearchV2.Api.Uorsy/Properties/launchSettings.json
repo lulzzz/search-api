@@ -17,7 +17,13 @@
         //"path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\mols.txt",
         "path_to_csv_source": "D:\\linux_share\\Bases\\UORSY_max_1.txt",
         "path_to_price_cats": "D:\\linux_share\\Bases\\uorsy\\pricingCat.txt",
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "smtp_address": "smtp.gmail.com",
+        "smtp_port": "465",
+        "smtp_password": "",
+        "smtp_username": "",
+        "email_from": "kostya.shnypir@gmail.com",
+        "inquiry_notification_email": "kostya.shnypir@gmail.com"
       }
     }
   }

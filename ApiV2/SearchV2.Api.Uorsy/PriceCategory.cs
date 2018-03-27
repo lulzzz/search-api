@@ -11,7 +11,9 @@ namespace SearchV2.Api.Uorsy
     {
         public class WeightPricePair
         {
+#warning must be a number, "{n} mg" formatting should be handled separately in each case
             public string Weight { get; set; }
+#warning must be a number, "{n} EUR" formatting should be handled separately in each case
             public string Price { get; set; }
         }
         public int Id { get; set; }
@@ -31,7 +33,7 @@ namespace SearchV2.Api.Uorsy
                     {
                         Id = int.Parse(line[0]),
                         ShippedWithin = line[1],
-                        WeightsAndPrices = weights.Select((w, i) => new PriceCategory.WeightPricePair { Weight = w, Price = line[i + commonHeaderLength] }).ToArray()
+                        WeightsAndPrices = weights.Select((w, i) => new WeightPricePair { Weight = w, Price = line[i + commonHeaderLength] }).ToArray()
                     };
                 }
             }
