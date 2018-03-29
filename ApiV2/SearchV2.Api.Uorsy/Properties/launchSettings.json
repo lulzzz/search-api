@@ -20,8 +20,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "smtp_address": "smtp.gmail.com",
         "smtp_port": "465",
-        "smtp_password": "",
-        "smtp_username": "",
+        "smtp_password": "fake",
+        "smtp_username": "fake",
         "email_from": "kostya.shnypir@gmail.com",
         "inquiry_notification_email": "kostya.shnypir@gmail.com"
       }

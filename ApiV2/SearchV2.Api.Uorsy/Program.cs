@@ -19,6 +19,36 @@ namespace SearchV2.Api.Uorsy
     using static CompositeSearchService;
     using System;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Net.Http.Headers;
+    using System.IO;
+
+    public class IdRequest
+    {
+        [FromBody]
+        public IEnumerable<string> Ids { get; set; }
+    }
+
+    public class CsvResult : IActionResult
+    {
+        public CsvResult(IEnumerable<string[]> lines, string delimiter)
+        {
+
+        }
+
+        public Task ExecuteResultAsync(ActionContext context)
+        {
+            var c = context.HttpContext;
+            context.HttpContext.Clear();
+            Response.AddHeader("Content-Disposition", "attachment; filename=" + fileInfo.Name);
+            Response.AddHeader("Content-Length", fileInfo.Length.ToString());
+            Response.ContentType = "application/octet-stream";
+            Response.Flush();
+            Response.TransmitFile(fileInfo.FullName);
+            Response.End();
+
+        }
+    }
 
     class Program
     {
@@ -114,10 +144,30 @@ namespace SearchV2.Api.Uorsy
                 Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => (await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value)),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
-                //Post("make-ids-list", (IEnumerable<string> ids) => makeFileResponse(ids)),
+                Post("make-ids-list", (IdRequest r) => new CsvResult(r.Ids.Select(item => new[] { item }), "\n")),
                 //Post("get-sdf", (IEnumerable<string> ids) => makeFileResponse(createSdf(ids))),
                 Post("inquire", async (InquiryRequest r) => await inquiryService.Inquire(await MapFromRequest(r)))
             ).Run();
+        }
+
+       static Stream prepareValues(IEnumerable<string> values)
+        {
+            const string delimiter = "\n";
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+
+            foreach (var item in values)
+            {
+                writer.Write(item);
+                writer.Write(delimiter);
+            }
+
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+
+
+            
         }
     }
 }
