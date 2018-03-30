@@ -31,22 +31,38 @@ namespace SearchV2.Api.Uorsy
 
     public class CsvResult : IActionResult
     {
-        public CsvResult(IEnumerable<string[]> lines, string delimiter)
-        {
+        readonly string _filename;
+        readonly IEnumerable<string[]> _lines;
+        readonly string _delimiter;
+        readonly string _linebreak;
 
+        public CsvResult(string filename, IEnumerable<string[]> lines, string delimiter, string lineBreak)
+        {
+            _filename = filename;
+            _lines = lines;
+            _delimiter = delimiter;
+            _linebreak = lineBreak;
         }
 
         public Task ExecuteResultAsync(ActionContext context)
         {
             var c = context.HttpContext;
-            context.HttpContext.Clear();
-            Response.AddHeader("Content-Disposition", "attachment; filename=" + fileInfo.Name);
-            Response.AddHeader("Content-Length", fileInfo.Length.ToString());
-            Response.ContentType = "application/octet-stream";
-            Response.Flush();
-            Response.TransmitFile(fileInfo.FullName);
-            Response.End();
+            var r = context.HttpContext.Response;
+            r.Headers.Add("Content-Disposition", "attachment; filename=" + _filename);
+            //r.Headers.Add("Content-Length", fileInfo.Length.ToString());
+            r.ContentType = "text/csv";
 
+            var writer = new StreamWriter(r.Body);
+
+            foreach (var line in _lines)
+            {
+                writer.Write(string.Join(_delimiter, line));
+                writer.Write(_linebreak);
+            }
+
+            writer.Flush();
+
+            return Task.CompletedTask;
         }
     }
 
@@ -144,7 +160,8 @@ namespace SearchV2.Api.Uorsy
                 Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => (await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value)),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
-                Post("make-ids-list", (IdRequest r) => new CsvResult(r.Ids.Select(item => new[] { item }), "\n")),
+#warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
+                Post("make-ids-list", (IdRequest r) => new CsvResult("uos-search-ids.csv", r.Ids.Select(item => new[] { item }), "", "\n")),
                 //Post("get-sdf", (IEnumerable<string> ids) => makeFileResponse(createSdf(ids))),
                 Post("inquire", async (InquiryRequest r) => await inquiryService.Inquire(await MapFromRequest(r)))
             ).Run();
