@@ -13,6 +13,12 @@ services:
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
     - path_to_price_cats=/data/pricingCat.csv
+    - smtp_address=
+    - smtp_port=
+    - smtp_password=
+    - smtp_username=
+    - email_from=screenlibs@uorsy.com
+    - inquiry_notification_email=screenlibs@uorsy.com
     volumes:
     - "~/logs/uorsy:/log"
     - "~/kos/uorsy:/data"

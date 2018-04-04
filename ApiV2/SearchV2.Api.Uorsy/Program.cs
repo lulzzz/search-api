@@ -54,10 +54,13 @@ namespace SearchV2.Api.Uorsy
 
             var writer = new StreamWriter(r.Body);
 
+            var quantité = 0;
+
             foreach (var line in _lines)
             {
                 writer.Write(string.Join(_delimiter, line));
                 writer.Write(_linebreak);
+                quantité++;
             }
 
             writer.Flush();
