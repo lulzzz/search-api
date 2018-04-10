@@ -5,6 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Templates\InquiryCustomerTemplate.cshtml" />
+    <Content Remove="Templates\InquiryNotificationTemplate.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Templates\InquiryCustomerTemplate.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\InquiryNotificationTemplate.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="RazorLight" Version="2.0.0-beta1" />
   </ItemGroup>
