@@ -25,7 +25,7 @@ namespace SearchV2.Api.Uorsy
 
     public class IdRequest
     {
-        [FromBody]
+        [FromForm]
         public IEnumerable<string> Ids { get; set; }
     }
 
@@ -54,13 +54,10 @@ namespace SearchV2.Api.Uorsy
 
             var writer = new StreamWriter(r.Body);
 
-            var quantité = 0;
-
             foreach (var line in _lines)
             {
                 writer.Write(string.Join(_delimiter, line));
                 writer.Write(_linebreak);
-                quantité++;
             }
 
             writer.Flush();
@@ -96,7 +93,7 @@ namespace SearchV2.Api.Uorsy
 
             var checker = new HashSet<string>();
             var mols = MoleculeData.ReadFromFile(env.PathToCsvSource).Where(md => checker.Add(md.Ref)).ToArray();
-            
+
             ICatalogDb<string, FilterQuery, MoleculeData> catalog = new InMemoryCatalogDb<FilterQuery, MoleculeData>(mols, FilterQuery.CreateFilterDelegate,
                 md => md.Ref,
                 md => md.Smiles,
@@ -140,7 +137,7 @@ namespace SearchV2.Api.Uorsy
                         {
                             amount = item.Value.Amount;
 #warning do something with "POA"
-                            formattedPrice = priceCategory.WeightsAndPrices.SingleOrDefault(wp => wp.Weight == amount)?.Price ?? "POA"; 
+                            formattedPrice = priceCategory.WeightsAndPrices.SingleOrDefault(wp => wp.Weight == amount)?.Price ?? "POA";
                         }
 
                         return new InquiryData.InquiryItem
@@ -156,11 +153,11 @@ namespace SearchV2.Api.Uorsy
             ApiCore.Api.BuildHost("",
                 Get("molecules/{id}", (string id) => catalog.OneAsync(id)),
 #warning needs smiles->inchi conversion
-                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => new { Data = new[] { t.Result } })),
+                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => MakeData(new[] { t.Result }))),
                 Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion
-                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => (await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value)),
+                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => MakeData((await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value))),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
 #warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
@@ -170,24 +167,14 @@ namespace SearchV2.Api.Uorsy
             ).Run();
         }
 
-       static Stream prepareValues(IEnumerable<string> values)
-        {
-            const string delimiter = "\n";
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-
-            foreach (var item in values)
-            {
-                writer.Write(item);
-                writer.Write(delimiter);
-            }
-
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
-
-
-            
+        public static Datac<T> MakeData<T>(T data) {
+            return new Datac<T> { Data = data };
         }
+    }
+
+    public class Datac<T>
+    {
+        public T Data { get; set; }
+
     }
 }
