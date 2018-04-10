@@ -57,7 +57,7 @@ namespace SearchV2.Api.Uorsy
         public InquiryService(string smtpHost, int smtpPort, string smtpUsername, string smtpPassword, string emailFrom, string inquiryNotificationEmail)
         {
             _engine = new RazorLightEngineBuilder()
-              .UseFilesystemProject(Path.GetFullPath("templates"))
+              .UseFilesystemProject(Path.GetFullPath("Templates"))
               .UseMemoryCachingProvider()
               .Build();
             _host = smtpHost;

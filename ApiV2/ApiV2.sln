@@ -20,6 +20,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EnamineStore", "EnamineStore", "{C0910E63-3E0B-4311-B3D1-1C859960404D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UORSY", "UORSY", "{D59F28FB-D856-468A-B850-1C00A8669AF0}"
+	ProjectSection(SolutionItems) = preProject
+		Uorsy\Dockerfile = Uorsy\Dockerfile
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchV2.Uorsy.MongoBootstrapper", "SearchV2.Uorsy.MongoBootstrapper\SearchV2.Uorsy.MongoBootstrapper.csproj", "{CE9CC34A-4A53-4440-9F50-A049990CDF5E}"
 EndProject
