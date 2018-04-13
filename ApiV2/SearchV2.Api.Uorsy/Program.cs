@@ -153,7 +153,7 @@ namespace SearchV2.Api.Uorsy
             ApiCore.Api.BuildHost("",
                 Get("molecules/{id}", (string id) => catalog.OneAsync(id)),
 #warning needs smiles->inchi conversion
-                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => MakeData(new[] { t.Result }))),
+                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => MakeData(t.Result != null ? new[] { t.Result } : new object[] { } ))),
                 Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion
