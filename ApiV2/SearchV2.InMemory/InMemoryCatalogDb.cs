@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SearchV2.InMemory
@@ -41,8 +40,9 @@ namespace SearchV2.InMemory
         }
 
         static readonly IEnumerable<TData> _empty = Enumerable.Empty<TData>();
+        static readonly IEqualityComparer<TData> _comparer = new ByIdComparer();
         private IEnumerable<TData> GetAsync(IEnumerable<string> ids)
-            => ids.SelectMany(id => _dictionary.TryGetValue(id, out List<int> dataIndexes) ? dataIndexes.Select(ind => _data[ind]) : _empty);
+            => ids.Distinct().SelectMany(id => _dictionary.TryGetValue(id, out List<int> dataIndexes) ? dataIndexes.Select(ind => _data[ind]) : _empty);
 
         Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetAsync(IEnumerable<string> keys)
             => Task.FromResult(GetAsync(keys));
@@ -62,5 +62,11 @@ namespace SearchV2.InMemory
 
         Task<TData> ICatalogDb<string, TFilterQuery, TData>.OneAsync(string id)
             => Task.FromResult(_dictionary.TryGetValue(id, out List<int> dataIndexes) ? _data[dataIndexes.First()] : null);
+
+        class ByIdComparer : IEqualityComparer<TData>
+        {
+            public bool Equals(TData x, TData y) => x.Ref == y.Ref;
+            public int GetHashCode(TData obj) => obj.Ref.GetHashCode();
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace SearchV2.Generics
         static readonly Task<bool> _falseTask = Task.FromResult(false);
         static readonly Task<bool> _trueTask = Task.FromResult(true);
 
-        async Task<object> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int skip, int take)
+        async Task<ResponseBody> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int skip, int take)
         {
             var limitFixed = skip + take;
             if (filters == null)
@@ -50,7 +50,12 @@ namespace SearchV2.Generics
                 });
                 
                 var filtered = await _catalog.GetFilteredAsync(vals.Select(v => v.Ref), filters);
-                return new { Data = Join(filtered, vals) };
+                
+                var countTask = result.Count;
+#warning check condition
+                var count = countTask.IsCompletedSuccessfully ? countTask.Result : (int?)null;
+
+                return new ResponseBody { Data = Join(filtered, vals), Count = count };
             }
             else
             {
@@ -103,8 +108,8 @@ namespace SearchV2.Generics
                     data.AddRange(await _catalog.GetFilteredAsync(buffer.Select(i => i.Ref), filters));
                     allSearchResults = allSearchResults.Union(buffer);
                 }
-                
-                return new { Data = Join(data.Skip(skip).Take(take), allSearchResults) };
+
+                return new ResponseBody { Data = Join(data.Skip(skip).Take(take), allSearchResults) };
             }
         }
 

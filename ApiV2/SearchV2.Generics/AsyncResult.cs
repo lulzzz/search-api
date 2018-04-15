@@ -11,6 +11,8 @@ namespace SearchV2.Generics
         readonly List<T> loaded = new List<T>();
         readonly object _syncObj = new object();
 
+        readonly TaskCompletionSource<int> _tsc = new TaskCompletionSource<int>(TaskCreationOptions.LongRunning);
+
         public delegate void UpdateStateDelegate(Task newTask, IEnumerable<T> loadedBatch);
 
         void UpdateState(Task runningTask, IEnumerable<T> newItems)
@@ -19,6 +21,10 @@ namespace SearchV2.Generics
             {
                 _runningTask = runningTask;
                 loaded.AddRange(newItems);
+                if (runningTask == null)
+                {
+                    _tsc.SetResult(loaded.Count);
+                }
             }
         }
 
@@ -163,6 +169,8 @@ namespace SearchV2.Generics
                 return AsyncOperationStatus.Running;
             }
         }
+
+        Task<int> ISearchResult<T>.Count => _tsc.Task;
         #endregion
     }
 }
