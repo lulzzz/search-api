@@ -15,8 +15,8 @@
       "environmentVariables": {
         "postgres_connection": "User ID=postgres;Host=10.3.28.43;Port=5432;Database=uorsy;Pooling=true;",
         //"path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\mols.txt",
-        "path_to_csv_source": "D:\\linux_share\\Bases\\UORSY_max_1.txt",
-        "path_to_price_cats": "D:\\linux_share\\Bases\\uorsy\\pricingCat.txt",
+        "path_to_csv_source": "D:\\work\\uos\\UORSY_max_1.txt",
+        "path_to_price_cats": "D:\\work\\uos\\pricingCat.txt",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "smtp_address": "mail.enamine.net",
         "smtp_port": "587",

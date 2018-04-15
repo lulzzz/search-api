@@ -150,14 +150,16 @@ namespace SearchV2.Api.Uorsy
                 };
             };
 
+            var emptyResponseBody = new ResponseBody { Data = new object[0], Count = 0 };
+
             ApiCore.Api.BuildHost("",
                 Get("molecules/{id}", (string id) => catalog.OneAsync(id)),
 #warning needs smiles->inchi conversion
-                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => MakeData(t.Result != null ? new[] { t.Result } : new object[] { } ))),
+                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => t.Result != null ? new ResponseBody { Data = new[] { t.Result }, Count = 1 } : emptyResponseBody)),
                 Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion
-                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => MakeData((await catalog.GetAsync(r.Query.Search)).Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value))),
+                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => { var result = (await catalog.GetAsync(r.Query.Search)).ToArray(); return result.Length > 0 ? new ResponseBody { Data = result.Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value), Count = result.Length } : emptyResponseBody; }),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
 #warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
@@ -165,10 +167,6 @@ namespace SearchV2.Api.Uorsy
                 //Post("get-sdf", (IEnumerable<string> ids) => makeFileResponse(createSdf(ids))),
                 Post("inquire", async (InquiryRequest r) => await inquiryService.Inquire(await MapFromRequest(r)))
             ).Run();
-        }
-
-        public static Datac<T> MakeData<T>(T data) {
-            return new Datac<T> { Data = data };
         }
     }
 
