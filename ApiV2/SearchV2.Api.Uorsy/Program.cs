@@ -163,7 +163,7 @@ namespace SearchV2.Api.Uorsy
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
 #warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
-                Post("make-ids-list", (IdRequest r) => new CsvResult("UORSY-search-results.csv", r.Ids.Select(item => new[] { item }), "", "\n")),
+                Post("make-ids-list", (IdRequest r) => new CsvResult("UORSY-inquiry-id-list.csv", r.Ids.Select(item => new[] { item }), "", "\n")),
                 //Post("get-sdf", (IEnumerable<string> ids) => makeFileResponse(createSdf(ids))),
                 Post("inquire", async (InquiryRequest r) => await inquiryService.Inquire(await MapFromRequest(r)))
             ).Run();
