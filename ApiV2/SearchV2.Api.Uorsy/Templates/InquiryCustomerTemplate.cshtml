@@ -1,7 +1,55 @@
-﻿@model SearchV2.Api.Uorsy.InquiryData
+﻿@using static SearchV2.Api.Uorsy.TemplateHelpers
+
+@model SearchV2.Api.Uorsy.InquiryData
+
+@{
+    var count = Model.InquiryItems.Count();
+    var totalPricedItems = Model.InquiryItems.Count(item => item.FormattedPrice != "POA");
+    var totalUnpricedItems = count - totalPricedItems;
+
+    var totalPricedPrice = Model.InquiryItems.Where(item => item.FormattedPrice != "POA").Select(item => int.Parse(item.FormattedPrice)).Sum();
+
+    var summary = totalPricedItems > 0 && totalUnpricedItems > 0
+        ? $"Total {count} {FormatProducts(count)}:<br />{totalPricedPrice} EUR for {totalPricedItems} {FormatProducts(totalPricedItems)}, for {totalUnpricedItems} {FormatProducts(totalUnpricedItems)} we will contact you with the specified price ASAP"
+        : totalPricedItems > 0 && totalUnpricedItems == 0
+        ? $"Total {totalPricedPrice} EUR for {totalPricedItems} {FormatProducts(totalPricedItems)}"
+        : totalPricedItems == 0 && totalUnpricedItems > 0
+        ? $"Total {totalUnpricedItems} {FormatProducts(totalUnpricedItems)}. We will contact you with the specified price ASAP"
+        : null;
+    if (summary == null)
+    {
+        throw new ApplicationException("something wrong");
+    }
+}
 
 <html>
+<head>
+    <title>UORSY Structure Search - your inquiry</title>
+</head>
 <body>
-    customer inquiry
+    <p>Dear customer,<br />thank you for very much your request!</p>
+    <p>We will contact you with all the further details.</p>
+    <p>Your request: @count products</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Amount</th>
+                <th>Price, EUR</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.InquiryItems)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Amount</td>
+                    <td>@item.FormattedPrice</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p>Kind regards,<br />UORSY team.</p>
 </body>
 </html>
