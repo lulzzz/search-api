@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "Local": {
+    "Home": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "launchUrl": "swagger",
@@ -17,6 +17,24 @@
         //"path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\mols.txt",
         "path_to_csv_source": "D:\\work\\uos\\UORSY_max_1.txt",
         "path_to_price_cats": "D:\\work\\uos\\pricingCat.txt",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "smtp_address": "smtp.gmail.com",
+        "smtp_port": "587",
+        "smtp_password": "AkkJh31z6oPTdT14UPMY",
+        "smtp_username": "koskokos.dev@gmail.com",
+        "email_from": "koskokos.dev@gmail.com",
+        "inquiry_notification_email": "kostya.shnypir@gmail.com"
+      }
+    },
+    "Work": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "postgres_connection": "User ID=postgres;Host=10.3.28.43;Port=5432;Database=uorsy;Pooling=true;",
+        //"path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\mols.txt",
+        "path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\UORSY_max_1.txt",
+        "path_to_price_cats": "D:\\linux_share\\Bases\\uorsy\\pricingCat.txt",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "smtp_address": "mail.enamine.net",
         "smtp_port": "587",

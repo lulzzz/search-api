@@ -27,6 +27,7 @@ namespace SearchV2.Generics
         async Task<ResponseBody> ISearchService<TSearchQuery, TFilterQuery>.FindAsync(TSearchQuery searchQuery, TFilterQuery filters, int skip, int take)
         {
             var limitFixed = skip + take;
+#warning consider adding some more trustworthy way of checking if any filters are supplied
             if (filters == null)
             {
                 var result = await _search.FindAsync(searchQuery, limitFixed);
@@ -108,6 +109,8 @@ namespace SearchV2.Generics
                     data.AddRange(await _catalog.GetFilteredAsync(buffer.Select(i => i.Ref), filters));
                     allSearchResults = allSearchResults.Union(buffer);
                 }
+
+#warning add caching for request incl filters and add Count to filtered results
 
                 return new ResponseBody { Data = Join(data.Skip(skip).Take(take), allSearchResults) };
             }
