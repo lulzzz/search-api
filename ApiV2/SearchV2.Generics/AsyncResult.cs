@@ -11,7 +11,7 @@ namespace SearchV2.Generics
         readonly List<T> loaded = new List<T>();
         readonly object _syncObj = new object();
 
-        readonly TaskCompletionSource<int> _tsc = new TaskCompletionSource<int>(TaskCreationOptions.LongRunning);
+        readonly TaskCompletionSource<int> _tsc = new TaskCompletionSource<int>();
 
         public delegate void UpdateStateDelegate(Task newTask, IEnumerable<T> loadedBatch);
 
