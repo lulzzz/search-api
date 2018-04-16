@@ -41,8 +41,8 @@ services:
     - email_from=koskokos.dev@gmail.com
     - inquiry_notification_email=koskokos.dev@gmail.com
     volumes:
-    - "home/kostya/logs/uorsy-test:/log"
-    - "home/kostya/data/uorsy-test:/data"
+    - "/home/kostya/logs/uorsy-test:/log"
+    - "/home/kostya/data/uorsy-test:/data"
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
@@ -52,7 +52,7 @@ services:
     ports:
     - "5432:5432"
     volumes:
-    - "home/kostya/data/rdkit-postgres-data:/var/lib/postgresql/data"
+    - "/home/kostya/data/rdkit-postgres-data:/var/lib/postgresql/data"
   java-oplusd:
     image: java-oplusd
     container_name: java-oplusd
