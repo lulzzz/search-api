@@ -34,4 +34,8 @@
     <ProjectReference Include="..\Uorsy.Data\Uorsy.Data.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+  </PropertyGroup>
+  
 </Project>
