@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  v2-uorsy:
+  prod-v2-uorsy:
     image: uorsy-search
     build:
       context: ./ApiV2
@@ -20,8 +20,29 @@ services:
     - email_from=screenlibs@uorsy.com
     - inquiry_notification_email=screenlibs@uorsy.com
     volumes:
-    - "~/logs/uorsy:/log"
-    - "~/kos/uorsy:/data"
+    - "~/logs/uorsy-prod:/log"
+    - "~/kos/uorsy-prod:/data"
+  test-v2-uorsy:
+    image: uorsy-search
+    build:
+      context: ./ApiV2
+      dockerfile: ./Uorsy/Dockerfile
+    ports:
+    - "5002:5002"
+    environment:
+    - ASPNETCORE_URLS=http://+:5002
+    - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
+    - path_to_csv_source=/data/mols.csv
+    - path_to_price_cats=/data/pricingCat.csv
+    - smtp_address=smtp.gmail.com
+    - smtp_port=587
+    - smtp_password=AkkJh31z6oPTdT14UPMY
+    - smtp_username=koskokos.dev@gmail.com
+    - email_from=screenlibs@uorsy.com
+    - inquiry_notification_email=koskokos.dev@gmail.com
+    volumes:
+    - "~/logs/uorsy-test:/log"
+    - "~/kos/uorsy-test:/data"
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
