@@ -1,8 +1,10 @@
-﻿namespace SearchV2.Abstractions
+﻿using System.Collections.Generic;
+
+namespace SearchV2.Abstractions
 {
     public class ResponseBody
     {
-        public object Data { get; set; }
+        public IEnumerable<object> Data { get; set; }
         public int? Count { get; set; }
     }
 }
