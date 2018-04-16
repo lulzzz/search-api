@@ -20,8 +20,8 @@ services:
     - email_from=no-reply@uorsy.com
     - inquiry_notification_email=screenlibs@uorsy.com
     volumes:
-    - "home/kostya/logs/uorsy-prod:/log"
-    - "home/kostya/data/uorsy-prod:/data"
+    - "/home/kostya/logs/uorsy-prod:/log"
+    - "/home/kostya/data/uorsy-prod:/data"
   test-v2-uorsy:
     image: uorsy-search
     build:
