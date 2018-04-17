@@ -13,54 +13,54 @@
     <title>UORSY Structure Search</title>
 </head>
 <body>
-    @Model.Name
-    @Model.Institution
-    @Model.Email
-    @Model.Comments
+    <p>@Model.Name</p>
+    <p>@Model.Institution</p>
+    <p>@Model.Email</p>
+    <p>@Model.Comments</p>
 
-    @if (totalPricedItems > 0)
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Amount</th>
-                    <th>Price, EUR</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.InquiryItems.Where(i => i.FormattedPrice != "POA"))
-                {
+        @if (totalPricedItems > 0)
+        {
+            <table>
+                <thead>
                     <tr>
-                        <td>@item.Id</td>
-                        <td>@item.Amount</td>
-                        <td>@item.FormattedPrice</td>
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Price, EUR</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    }
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.InquiryItems.Where(i => i.FormattedPrice != "POA"))
+                {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.Amount</td>
+                            <td>@item.FormattedPrice</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
 
-    @if (totalUnpricedItems > 0)
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.InquiryItems.Where(i => i.FormattedPrice == "POA"))
-                {
+        @if (totalUnpricedItems > 0)
+        {
+            <table>
+                <thead>
                     <tr>
-                        <td>@item.Id</td>
-                        <td>@item.Amount</td>
+                        <th>ID</th>
+                        <th>Amount</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    }
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.InquiryItems.Where(i => i.FormattedPrice == "POA"))
+                {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.Amount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
 
 </body>
 </html>
