@@ -7,9 +7,9 @@ services:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
     ports:
-    - "5001:5001"
+    - "80:5000"
     environment:
-    - ASPNETCORE_URLS=http://+:5001
+    - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
     - path_to_price_cats=/data/pricingCat.csv
@@ -28,9 +28,9 @@ services:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
     ports:
-    - "5002:5002"
+    - "8080:5000"
     environment:
-    - ASPNETCORE_URLS=http://+:5002
+    - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
     - path_to_price_cats=/data/pricingCat.csv
@@ -51,8 +51,8 @@ services:
       dockerfile: Dockerfile
     ports:
     - "5432:5432"
-    volumes:
-    - "/home/kostya/data/rdkit-postgres-data:/var/lib/postgresql/data"
+    # volumes:
+    # - "/home/kostya/data/rdkit-postgres-data:/var/lib/postgresql/data"
   java-oplusd:
     image: java-oplusd
     container_name: java-oplusd
