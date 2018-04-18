@@ -15,7 +15,7 @@ services:
     - path_to_price_cats=/data/pricingCat.csv
     - smtp_address=mail.uorsy.com
     - smtp_port=465
-    - "smtp_password=]$zqO$sY)FKE"
+    - "smtp_password=]$$zqO$$sY)FKE"
     - smtp_username=no-reply@uorsy.com
     - email_from=no-reply@uorsy.com
     - inquiry_notification_email=screenlibs@uorsy.com
