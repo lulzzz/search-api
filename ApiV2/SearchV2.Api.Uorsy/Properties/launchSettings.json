@@ -8,6 +8,24 @@
     }
   },
   "profiles": {
+    "ProdMail": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "postgres_connection": "User ID=postgres;Host=10.3.28.43;Port=5432;Database=uorsy;Pooling=true;",
+        //"path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\mols.txt",
+        "path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\UORSY_max_1.txt",
+        "path_to_price_cats": "D:\\linux_share\\Bases\\uorsy\\pricingCat.txt",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "smtp_address": "ssl://mail.uorsy.com",
+        "smtp_port": "465",
+        "smtp_password": "]$zqO$sY)FKE",
+        "smtp_username": "no-reply@uorsy.com",
+        "email_from": "no-reply@uorsy.com",
+        "inquiry_notification_email": "screenlibs@uorsy.com"
+      }
+    },
     "Home": {
       "commandName": "IISExpress",
       "launchBrowser": true,
