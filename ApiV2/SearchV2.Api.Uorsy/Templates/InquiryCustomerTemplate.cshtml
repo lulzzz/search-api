@@ -8,18 +8,6 @@
     var totalUnpricedItems = count - totalPricedItems;
 
     var totalPricedPrice = Model.InquiryItems.Where(item => item.FormattedPrice != "POA").Select(item => int.Parse(item.FormattedPrice)).Sum();
-
-    var summary = totalPricedItems > 0 && totalUnpricedItems > 0
-        ? $"Total {count} {FormatProducts(count)}:<br />{totalPricedPrice} EUR for {totalPricedItems} {FormatProducts(totalPricedItems)}, for {totalUnpricedItems} {FormatProducts(totalUnpricedItems)} we will contact you with the specified price ASAP"
-        : totalPricedItems > 0 && totalUnpricedItems == 0
-        ? $"Total {totalPricedPrice} EUR for {totalPricedItems} {FormatProducts(totalPricedItems)}"
-        : totalPricedItems == 0 && totalUnpricedItems > 0
-        ? $"Total {totalUnpricedItems} {FormatProducts(totalUnpricedItems)}. We will contact you with the specified price ASAP"
-        : null;
-    if (summary == null)
-    {
-        throw new ApplicationException("something wrong");
-    }
 }
 
 <html>
@@ -28,25 +16,35 @@
 </head>
 <body>
     <p>Dear customer,</p>
-    <p>thank you for very much your request!</p>
-    <p>We will contact you with all the further details.</p>
+    <p>thank you very much for your request!</p>
+    <p>We will contact you with all further details.</p>
     <p>Your request: @count products</p>
-    
-    <table>
+
+    @if (totalPricedItems > 0)
+    {
+        <p>Total for @totalPricedItems @FormatProducts(totalPricedItems): @totalPricedPrice EUR</p>
+    }
+
+    @if (totalUnpricedItems > 0)
+    {
+        <p>For @totalUnpricedItems @FormatProducts(totalUnpricedItems), price will be set by our manager since the custom amount has been chosen.</p>
+    }
+
+    <table style="border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="width: 120px">ID</th>
-                <th style="width: 80px">Amount</th>
-                <th>Price, EUR</th>
+                <th style="border: 1px solid #000; padding: 0 10px;">ID</th>
+                <th style="border: 1px solid #000; padding: 0 10px;">Amount</th>
+                <th style="border: 1px solid #000; padding: 0 10px;">Price, EUR</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model.InquiryItems)
             {
                 <tr>
-                    <td>@item.Id</td>
-                    <td>@item.Amount</td>
-                    <td>@item.FormattedPrice</td>
+                    <td style="border: 1px solid #000; padding: 0 10px;">@item.Id</td>
+                    <td style="border: 1px solid #000; padding: 0 10px;">@item.Amount</td>
+                    <td style="border: 1px solid #000; padding: 0 10px; text-align: center;">@item.FormattedPrice</td>
                 </tr>
             }
         </tbody>

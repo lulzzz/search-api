@@ -101,7 +101,7 @@ namespace SearchV2.Api.Uorsy
                 md => md.InChIKey);
 
             var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, hitLimit), 1000));
-            var simSearch = Compose(catalog, RDKitSearchService.Similar(env.PostgresConnection, hitLimit));
+            var simSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Similar(env.PostgresConnection, hitLimit), 1000));
 
             var inquiryService = new InquiryService(env.SmtpAddress, int.Parse(env.SmtpPort), env.SmtpUsername, env.SmtpPassword, env.EmailFrom, env.InquiryNotificationEmail);
 

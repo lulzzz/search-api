@@ -1,11 +1,12 @@
-﻿using System;
+﻿using SearchV2.Generics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Uorsy.Data;
 
 namespace SearchV2.Api.Uorsy
 {
-    public class FilterQuery
+    public class FilterQuery : IFilterQuery
     {
         public Filter<double>? Mw { get; set; }
         public Filter<double>? Logp { get; set; }
@@ -15,6 +16,8 @@ namespace SearchV2.Api.Uorsy
         public Filter<double>? Tpsa { get; set; }
         public Filter<double>? Fsp3 { get; set; }
         public Filter<int>? Hac { get; set; }
+
+        bool IFilterQuery.HasConditions => Enumerate().Any();
 
         public struct Filter<T> where T : struct, IComparable<T>
         {

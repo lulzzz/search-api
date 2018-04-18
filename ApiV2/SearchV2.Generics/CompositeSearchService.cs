@@ -11,6 +11,7 @@ namespace SearchV2.Generics
         : ISearchService<TSearchQuery, TFilterQuery> 
         where TData : IWithReference<TId>
         where TSearchResult : IWithReference<TId>
+        where TFilterQuery : IFilterQuery
     {
         readonly ICatalogDb<TId, TFilterQuery, TData> _catalog;
         readonly ISearchComponent<TId, TSearchQuery, TSearchResult> _search;
@@ -28,7 +29,7 @@ namespace SearchV2.Generics
         {
             var limitFixed = skip + take;
 #warning consider adding some more trustworthy way of checking if any filters are supplied
-            if (filters == null)
+            if (filters == null || !filters.HasConditions)
             {
                 var result = await _search.FindAsync(searchQuery, limitFixed);
                 var vals = new List<TSearchResult>(take);
@@ -145,6 +146,11 @@ namespace SearchV2.Generics
         }
     }
 
+    public interface IFilterQuery
+    {
+        bool HasConditions { get; }
+    }
+
     public static class CompositeSearchService
     {
         public static ISearchService<TSearchQuery, TFilterQuery> Compose<TId, TSearchQuery, TFilterQuery, TSearchResult, TData>(
@@ -153,6 +159,7 @@ namespace SearchV2.Generics
         )
             where TData : IWithReference<TId>
             where TSearchResult : IWithReference<TId>
+            where TFilterQuery : IFilterQuery
             => new CompositeSearchService<TId, TSearchQuery, TFilterQuery, TSearchResult, TData>(catalog, search);
     }
 }
