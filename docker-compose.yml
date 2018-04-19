@@ -23,6 +23,7 @@ services:
     - "/home/kostya/logs/uorsy-prod:/log"
     - "/home/kostya/data/uorsy-prod:/data"
   test-v2-uorsy:
+    container_name: test-v2-uorsy
     image: uorsy-search
     build:
       context: ./ApiV2
@@ -43,6 +44,16 @@ services:
     volumes:
     - "/home/kostya/logs/uorsy-test:/log"
     - "/home/kostya/data/uorsy-test:/data"
+  https-portal:
+    image: steveltn/https-portal:1
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - test-v2-uorsy
+    restart: always
+    environment:
+      DOMAINS: '167.99.174.163 -> http://test-v2-uorsy:5000'
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
