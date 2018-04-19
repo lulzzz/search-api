@@ -1,13 +1,24 @@
 version: '3'
 
 services:
+  https-portal-prod:
+    image: steveltn/https-portal:1
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - prod-v2-uorsy
+    restart: always
+    environment:
+      DOMAINS: 'api.uorsy.com -> http://prod-v2-uorsy'
+      STAGE: 'production'
   prod-v2-uorsy:
     image: uorsy-search
     build:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
     ports:
-    - "80:5000"
+    - "8080:5000"
     environment:
     - ASPNETCORE_URLS=http://+:5000
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
@@ -23,13 +34,12 @@ services:
     - "/home/kostya/logs/uorsy-prod:/log"
     - "/home/kostya/data/uorsy-prod:/data"
   test-v2-uorsy:
-    container_name: uorsy-for-https
     image: uorsy-search
     build:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
-    # ports:
-    # - "8080:5000"
+    ports:
+    - "8081:5000"
     environment:
     - ASPNETCORE_URLS=http://+:80
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
@@ -44,16 +54,6 @@ services:
     volumes:
     - "/home/kostya/logs/uorsy-test:/log"
     - "/home/kostya/data/uorsy-test:/data"
-  https-portal:
-    image: steveltn/https-portal:1
-    ports:
-     # - '80:80'
-      - '443:443'
-    links:
-      - uorsy-for-https
-    restart: always
-    environment:
-      DOMAINS: 'api.uorsy.com -> http://uorsy-for-https'
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
