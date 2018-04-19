@@ -18,9 +18,9 @@ services:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
     ports:
-    - "8080:5000"
+    - "8080:80"
     environment:
-    - ASPNETCORE_URLS=http://+:5000
+    - ASPNETCORE_URLS=http://+:80
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
     - path_to_price_cats=/data/pricingCat.csv
