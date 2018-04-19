@@ -73,6 +73,8 @@ namespace SearchV2.Api.Uorsy
         {
             using (var client = new SmtpClient())
             {
+                client.LocalDomain = "api.uorsy.local";
+
                 var connectTask = Task.Run(async () =>
                 {
                     await client.ConnectAsync(_host, _port, true);
