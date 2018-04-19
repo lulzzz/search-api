@@ -23,23 +23,23 @@ services:
     - "/home/kostya/logs/uorsy-prod:/log"
     - "/home/kostya/data/uorsy-prod:/data"
   test-v2-uorsy:
-    container_name: test-v2-uorsy
+    container_name: uorsy-for-https
     image: uorsy-search
     build:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
-    ports:
-    - "8080:5000"
+    # ports:
+    # - "8080:5000"
     environment:
-    - ASPNETCORE_URLS=http://+:5000
+    - ASPNETCORE_URLS=http://+:80
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
     - path_to_csv_source=/data/mols.csv
     - path_to_price_cats=/data/pricingCat.csv
-    - smtp_address=smtp.gmail.com
+    - smtp_address=mail.uorsy.com
     - smtp_port=587
-    - smtp_password=AkkJh31z6oPTdT14UPMY
-    - smtp_username=koskokos.dev@gmail.com
-    - email_from=koskokos.dev@gmail.com
+    - "smtp_password=]$$zqO$$sY)FKE"
+    - smtp_username=no-reply@uorsy.com
+    - email_from=no-reply@uorsy.com
     - inquiry_notification_email=koskokos.dev@gmail.com
     volumes:
     - "/home/kostya/logs/uorsy-test:/log"
@@ -47,13 +47,13 @@ services:
   https-portal:
     image: steveltn/https-portal:1
     ports:
-      - '80:80'
+     # - '80:80'
       - '443:443'
     links:
-      - test-v2-uorsy
+      - uorsy-for-https
     restart: always
     environment:
-      DOMAINS: '167.99.174.163 -> http://test-v2-uorsy:5000'
+      DOMAINS: 'api.uorsy.com -> http://uorsy-for-https'
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
