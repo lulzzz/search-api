@@ -18,7 +18,7 @@
         "path_to_csv_source": "D:\\linux_share\\Bases\\uorsy\\UORSY_max_1.txt",
         "path_to_price_cats": "D:\\linux_share\\Bases\\uorsy\\pricingCat.txt",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "smtp_address": "ssl://mail.uorsy.com",
+        "smtp_address": "mail.uorsy.com",
         "smtp_port": "465",
         "smtp_password": "]$zqO$sY)FKE",
         "smtp_username": "no-reply@uorsy.com",

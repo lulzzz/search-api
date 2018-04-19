@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Mvc;
+using MimeKit;
+using MimeKit.Text;
 using RazorLight;
 using Serilog;
 using Serilog.Core;
@@ -7,8 +10,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -49,7 +50,7 @@ namespace SearchV2.Api.Uorsy
         readonly IRazorLightEngine _engine;
         readonly string _host;
         readonly int _port;
-        readonly string _emailFrom;
+        readonly MailboxAddress _emailFrom;
         readonly string _inquiryNotificationEmail;
         readonly string _username;
         readonly string _password;
@@ -62,7 +63,7 @@ namespace SearchV2.Api.Uorsy
               .Build();
             _host = smtpHost;
             _port = smtpPort;
-            _emailFrom = emailFrom;
+            _emailFrom = new MailboxAddress("UORSY", emailFrom);
             _inquiryNotificationEmail = inquiryNotificationEmail;
             _username = smtpUsername;
             _password = smtpPassword;
@@ -70,26 +71,36 @@ namespace SearchV2.Api.Uorsy
 
         public async Task Inquire(InquiryData data)
         {
-            using (var client = new SmtpClient { Host = _host, Port = _port, EnableSsl = true, DeliveryMethod = SmtpDeliveryMethod.Network, UseDefaultCredentials = false, Credentials = new NetworkCredential(_username, _password) })
+            using (var client = new SmtpClient())
             {
-                var notificationMail = new MailMessage(_emailFrom, _inquiryNotificationEmail)
+                var connectTask = Task.Run(async () =>
+                {
+                    await client.ConnectAsync(_host, _port, true);
+                    await client.AuthenticateAsync(_username, _password);
+                });
+
+                var notificationMail = new MimeMessage {
+                    Subject = "UORSY Structure Search",
+                    Body = new TextPart(TextFormat.Html) { Text = await _engine.CompileRenderAsync("InquiryNotificationTemplate.cshtml", data) }
+                };
+                notificationMail.From.Add(_emailFrom);
+                notificationMail.To.Add(new MailboxAddress("UORSY Screenlibs", _inquiryNotificationEmail));
+                
+                await connectTask;
+                var notificationTask = client.SendAsync(notificationMail);
+
+                var mailToCustomer = new MimeMessage
                 {
                     Subject = "UORSY Structure Search",
-                    IsBodyHtml = true,
-                    Body = await _engine.CompileRenderAsync("InquiryNotificationTemplate.cshtml", data)
+                    Body = new TextPart(TextFormat.Html) { Text = await _engine.CompileRenderAsync("InquiryCustomerTemplate.cshtml", data) }
                 };
+                mailToCustomer.From.Add(_emailFrom);
+                mailToCustomer.To.Add(new MailboxAddress(data.Name, data.Email));
 
-                var notificationSendTask = client.SendMailAsync(notificationMail);
-
-                var mailToCustomer = new MailMessage(_emailFrom, data.Email)
-                {
-                    Subject = "UORSY Structure Search - your inquiry",
-                    IsBodyHtml = true,
-                    Body = await _engine.CompileRenderAsync("InquiryCustomerTemplate.cshtml", data)
-                };
-
-                await notificationSendTask;
-                await client.SendMailAsync(mailToCustomer);
+                await notificationTask;
+                await client.SendAsync(mailToCustomer);
+                
+                await client.DisconnectAsync(true);
             }
         }
     }
