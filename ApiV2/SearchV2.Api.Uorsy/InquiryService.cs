@@ -74,6 +74,7 @@ namespace SearchV2.Api.Uorsy
             using (var client = new SmtpClient())
             {
                 client.LocalDomain = "api.uorsy.local";
+                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                 var connectTask = Task.Run(async () =>
                 {
