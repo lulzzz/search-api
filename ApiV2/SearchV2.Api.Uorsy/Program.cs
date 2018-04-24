@@ -100,6 +100,7 @@ namespace SearchV2.Api.Uorsy
                 md => md.Cas,
                 md => md.InChIKey);
 
+            var exactSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Exact(env.PostgresConnection), 1000));
             var subSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Substructure(env.PostgresConnection, hitLimit), 1000));
             var simSearch = Compose(catalog, CachingSearchComponent.Wrap(RDKitSearchService.Similar(env.PostgresConnection, hitLimit), 1000));
 
@@ -155,7 +156,7 @@ namespace SearchV2.Api.Uorsy
             ApiCore.Api.BuildHost("",
                 Get("molecules/{id}", (string id) => catalog.OneAsync(id)),
 #warning needs smiles->inchi conversion
-                Post("molecules/exact", (SearchRequest<string> r) => catalog.OneAsync(r.Query.Search).ContinueWith(t => t.Result != null ? new ResponseBody { Data = new[] { t.Result }, Count = 1 } : emptyResponseBody)),
+                Post("molecules/exact", (SearchRequest<string> r) => Find(exactSearch, new SearchRequest<string, FilterQuery> { Query = new SearchRequest<string, FilterQuery>.Body { Filters = null, Search = r.Query.Search }, PageNumber = r.PageNumber, PageSize = r.PageSize })),
                 Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion

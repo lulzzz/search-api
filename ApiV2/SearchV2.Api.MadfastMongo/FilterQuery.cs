@@ -1,11 +1,12 @@
 ﻿using MongoDB.Driver;
+using SearchV2.Generics;
 using SearchV2.MongoDB;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SearchV2.Api.MadfastMongo
 {
-    public class FilterQuery
+    public class FilterQuery : IFilterQuery
     {
         public Filter<double>? Mw { get; set; }
         public Filter<double>? Logp { get; set; }
@@ -15,6 +16,9 @@ namespace SearchV2.Api.MadfastMongo
         public Filter<double>? Tpsa { get; set; }
         public Filter<double>? Fsp3 { get; set; }
         public Filter<int>? Hac { get; set; }
+
+#warning hacked
+        bool IFilterQuery.HasConditions => true;
 
         public struct Filter<T> where T : struct
         {

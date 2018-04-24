@@ -18,5 +18,10 @@ namespace SearchV2.RDKit
         {
             return new RDKitSimilaritySearchService(connectionString, hitLimit);
         }
+
+        public static ISearchComponent<string, string, RDKitSimpleSearchResult> Exact(string connectionString)
+        {
+            return new RDKitExactSearchService(connectionString);
+        }
     }
 }
