@@ -160,7 +160,10 @@ namespace SearchV2.Api.Uorsy
                 Post("molecules/sub", (SearchRequest<string, FilterQuery> r) => Find(subSearch, r)),
                 Post("molecules/sim", (SearchRequest<RDKitSimilaritySearchRequest, FilterQuery> r) => Find(simSearch, r)),
 #warning needs CAS, inchikey and id? validation and smiles->inchi conversion
-                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => { var result = (await catalog.GetAsync(r.Query.Search)).ToArray(); return result.Length > 0 ? new ResponseBody { Data = result.Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value), Count = result.Length } : emptyResponseBody; }),
+                Post("molecules/text", async (SearchRequest<IEnumerable<string>> r) => {
+                    var result = (await catalog.GetAsync(r.Query.Search)).ToArray();
+                    return result.Length > 0 ? new ResponseBody { Data = result.Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value), Count = result.Length } : emptyResponseBody;
+                }),
 #warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
 #warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
