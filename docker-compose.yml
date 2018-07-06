@@ -17,8 +17,6 @@ services:
     build:
       context: ./ApiV2
       dockerfile: ./Uorsy/Dockerfile
-    ports:
-    - "8080:80"
     environment:
     - ASPNETCORE_URLS=http://+:80
     - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
@@ -33,124 +31,32 @@ services:
     volumes:
     - "/home/kostya/logs/uorsy-prod:/log"
     - "/home/kostya/data/uorsy-prod:/data"
-  test-v2-uorsy:
-    image: uorsy-search
-    build:
-      context: ./ApiV2
-      dockerfile: ./Uorsy/Dockerfile
-    ports:
-    - "8081:5000"
-    environment:
-    - ASPNETCORE_URLS=http://+:80
-    - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
-    - path_to_csv_source=/data/mols.csv
-    - path_to_price_cats=/data/pricingCat.csv
-    - smtp_address=mail.uorsy.com
-    - smtp_port=587
-    - "smtp_password=]$$zqO$$sY)FKE"
-    - smtp_username=no-reply@uorsy.com
-    - email_from=no-reply@uorsy.com
-    - inquiry_notification_email=koskokos.dev@gmail.com
-    volumes:
-    - "/home/kostya/logs/uorsy-test:/log"
-    - "/home/kostya/data/uorsy-test:/data"
+  # test-v2-uorsy:
+  #   image: uorsy-search
+  #   build:
+  #     context: ./ApiV2
+  #     dockerfile: ./Uorsy/Dockerfile
+  #   ports:
+  #   - "8081:5000"
+  #   environment:
+  #   - ASPNETCORE_URLS=http://+:80
+  #   - postgres_connection=User ID=postgres;Host=rdkit-postgres;Port=5432;Database=uorsy;Pooling=true;
+  #   - path_to_csv_source=/data/mols.csv
+  #   - path_to_price_cats=/data/pricingCat.csv
+  #   - smtp_address=mail.uorsy.com
+  #   - smtp_port=587
+  #   - "smtp_password=]$$zqO$$sY)FKE"
+  #   - smtp_username=no-reply@uorsy.com
+  #   - email_from=no-reply@uorsy.com
+  #   - inquiry_notification_email=koskokos.dev@gmail.com
+  #   volumes:
+  #   - "/home/kostya/logs/uorsy-test:/log"
+  #   - "/home/kostya/data/uorsy-test:/data"
   rdkit-postgres:
     image: rdkit-postgres
     container_name: rdkit-postgres
     build:
       context: ./Docker.Rdkit
       dockerfile: Dockerfile
-    ports:
-    - "5432:5432"
     # volumes:
     # - "/home/kostya/data/rdkit-postgres-data:/var/lib/postgresql/data"
-  java-oplusd:
-    image: java-oplusd
-    container_name: java-oplusd
-    build:
-      context: ./JavaOPlusD
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
-      - ora_user=c$$dcischem
-      - ora_pass=y3wxf1o(PLpt
-      # - http_proxy=http://10.3.80.80:3128
-      # - https_proxy=http://10.3.80.80:3128
-  oplusd-standalone:
-    image: oplusd-standalone
-    container_name: oplusd-standalone
-    build:
-      context: ./OPlusD.Standalone
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - ora_connection=jdbc:oracle:thin:@10.3.80.181:1521:chemspace
-      - ora_user=c$$dcischem
-      - ora_pass=y3wxf1o(PLpt
-  oplusd-search-api:
-    image: oplusd-search-api
-    build:
-      context: ./Api
-      dockerfile: ./JavaOPlusD/Dockerfile
-    ports:
-      - "5001:5001"
-    environment:
-      - ASPNETCORE_URLS=http://+:5001
-      - java_oplusd_url=http://java-oplusd:8080
-      # - http_proxy=http://10.3.80.80:3128
-      # - https_proxy=http://10.3.80.80:3128
-  mongo:
-    image: mongo:3.6
-    container_name: mongo
-    ports: 
-      - "27017:27017"
-    volumes:
-      - "~/mongo-data:/data/db"
-    security_opt:
-      - seccomp:unconfined
-  mongo-bootstrap:
-    image: mongo-bootstrap
-    build: 
-      context: ./Api
-      dockerfile: ./Mongo/bootstrap.dockerfile
-    volumes:
-      - "~/kos/m337:/data"
-    environment:
-      - mongo_connection=mongodb://mongo:27017
-  v2-madfast-mongo-api:
-    image: v2-madfast-mongo-api
-    build:
-      context: ./ApiV2
-      dockerfile: ./SearchV2.Api.MadfastMongo/Dockerfile
-    ports:
-    - "5000:5000"
-    environment:
-    - ASPNETCORE_URLS=http://+:5000
-    - madfast_url=http://madfast:8085/rest/descriptors/nci-250k-ecfp4/find-most-similars
-    - mongo_connection=mongodb://mongo:27017
-    - mongo_dbname=search_350m
-  redis:
-    container_name: redis
-    image: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - ~/redis-data:/data
-    entrypoint: redis-server --appendonly yes
-    restart: always
-  madfast:
-    container_name: madfast
-    image: openjdk:8u151-jre
-    ports:
-      - "8085:8085"
-    volumes: # these are just taken from fs
-      - ~/madfast:/app
-      - ~/.chemaxon:/license
-    environment:
-      - CHEMAXON_LICENSE_URL=/license/license.cxl
-    entrypoint: /app/examples/rest-api-small_ecfp4.sh
-
-    
