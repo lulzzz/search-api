@@ -10,6 +10,6 @@ namespace Uorsy.Data
         string InChIKey { get; }
         string Cas { get; }
         string Mfcd { get; }
-        int PriceCategory { get; }
+        int PriceCategoryId { get; }
     }
 }

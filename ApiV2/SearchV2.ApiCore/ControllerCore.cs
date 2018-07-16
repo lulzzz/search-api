@@ -24,9 +24,9 @@ namespace SearchV2.ApiCore
                 TypeAttributes.Sealed,
                 null);
 
-        public static TypeInfo CreateControllerClass(string routePrefix, params ActionDescriptor[] actions)
+        public static TypeInfo CreateControllerClass(string routePrefix, string controllerName, params ActionDescriptor[] actions)
         {
-            var type = mb.CreateTypeBuilder("MoleculesController"); // + Guid.NewGuid().ToString("N")
+            var type = mb.CreateTypeBuilder($"{controllerName}Controller"); // + Guid.NewGuid().ToString("N")
             type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ControllerAttribute).GetConstructor(new Type[] { }), new object[] { }));
             type.SetCustomAttribute(new CustomAttributeBuilder(typeof(ValidateModelAttribute).GetConstructor(new Type[] { }), new object[] { }));
             if (!string.IsNullOrEmpty(routePrefix))

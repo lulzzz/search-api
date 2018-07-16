@@ -164,7 +164,7 @@ namespace SearchV2.Api.Uorsy
                     var result = (await catalog.GetAsync(r.Query.Search)).ToArray();
                     return result.Length > 0 ? new ResponseBody { Data = result.Skip((r.PageNumber.Value - 1) * r.PageSize.Value).Take(r.PageSize.Value), Count = result.Length } : emptyResponseBody;
                 }),
-#warning should be in different controller and should be fitted with molecules as a dictionary according to openapi
+#warning should be fit with molecules as a dictionary according to openapi
                 Get("price-categories", () => priceCategories),
 #warning needs check if Id is Id indeed. can be reimplemented with client-side blobs
                 Post("make-ids-list", (IdRequest r) => new CsvResult("UORSY-inquiry-id-list.csv", r.Ids.Select(item => new[] { item }), "", "\n")),

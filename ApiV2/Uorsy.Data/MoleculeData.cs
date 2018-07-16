@@ -6,6 +6,7 @@ namespace Uorsy.Data
 {
     public class MoleculeData : IMoleculeData
     {
+
         public string Ref { set { Id = value; } }
         string IWithReference<string>.Ref => Id;
 
@@ -27,7 +28,8 @@ namespace Uorsy.Data
         public string Cas { get; set; }
         public string Mfcd { get; set; }
 
-        public int PriceCategory { get; set; }
+        public int PriceCategoryId { get; set; }
+
 
         public static IEnumerable<MoleculeData> ReadFromFile(string path)
         {
@@ -81,7 +83,7 @@ namespace Uorsy.Data
                 InChIKey = lineItems[11],
                 Cas = cas,
                 Mfcd = mfcd,
-                PriceCategory = pc,
+                PriceCategoryId = pc,
                 RingCount = int.Parse(lineItems[15])
             };
 

@@ -21,7 +21,7 @@ namespace SearchV2.ApiCore
 
             services
                 .AddMvcCore()
-                .AddSearchFeature()
+                .AddControllersByDescriptors()
                 .AddApiExplorer()
                 .AddDataAnnotations()
                 .AddJsonOptions(options =>

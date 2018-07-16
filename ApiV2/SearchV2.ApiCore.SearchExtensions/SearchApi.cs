@@ -12,5 +12,8 @@ namespace SearchV2.ApiCore.SearchExtensions
                 (r.PageNumber.Value - 1) * r.PageSize.Value,
                 r.PageSize.Value
             );
+
+        public static Task<ResponseBody> Find<TSearchQuery, TFilterQuery>(ISearchService<TSearchQuery, TFilterQuery> s, SearchRequest<TSearchQuery> r)
+            => Find(s, new SearchRequest<TSearchQuery, TFilterQuery> { Query = new SearchRequest<TSearchQuery, TFilterQuery>.Body { Filters = default(TFilterQuery), Search = r.Query.Search }, PageNumber = r.PageNumber, PageSize = r.PageSize });
     }
 }
