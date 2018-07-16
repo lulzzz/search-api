@@ -4,11 +4,13 @@ using System.IO;
 
 namespace Uorsy.Data
 {
-    public class MoleculeData : IWithReference<string>
+    public class MoleculeData : IMoleculeData
     {
-        public string Smiles { get; set; }
+        public string Ref { set { Id = value; } }
+        string IWithReference<string>.Ref => Id;
 
-        public string Ref { get; set; }
+        public string Id { get; private set; }
+        public string Smiles { get; set; }
         public string Name { get; set; }
 
         public double Mw { get; set; }
