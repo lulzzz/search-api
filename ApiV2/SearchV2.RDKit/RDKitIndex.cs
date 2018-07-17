@@ -28,7 +28,7 @@ namespace SearchV2.RDKit
 
             await WithConnection(string.Format(connectionStringPreformatted, "postgres"), async c =>
             {
-                dbExists = await c.ExecuteCommandScalar("SELECT 1 FROM pg_database WHERE datname='postgres'") != null;
+                dbExists = await c.ExecuteCommandScalar($"SELECT 1 FROM pg_database WHERE datname='{dbName}'") != null;
                 if (!dbExists)
                 {
                     await c.ExecuteCommandNonQuery($"CREATE DATABASE {dbName}");
