@@ -119,8 +119,8 @@ namespace SearchV2.Generics
 
         IEnumerable<object> Join(IEnumerable<TData> filtered, IEnumerable<TSearchResult> searchResult)
         {
-            var tDataProps = typeof(TData).GetProperties();
-            var tSearchResultProps = typeof(TSearchResult).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var tDataProps = typeof(TData).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead).ToArray();
+            var tSearchResultProps = typeof(TSearchResult).GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanRead);
 
             var filteredDict = filtered.ToDictionary(f => f.Ref);
             foreach (var searchItem in searchResult)

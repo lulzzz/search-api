@@ -14,7 +14,7 @@ namespace SearchV2.RDKit
 
         readonly static string selectFromClause =
             $"SELECT {nameof(Mr.Ref)} " +
-            $"FROM (SELECT {nameof(Mr)}.{nameof(Mr.Ref)}, ms.fp FROM {nameof(Mr)} ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>ms.fp LIMIT 1) AS sub " +
+            $"FROM (SELECT {nameof(Mr.Ref)}, fp FROM {nameof(Mr)} ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>fp LIMIT 1) AS sub " +
             $"WHERE morganbv_fp(mol_from_smiles(@SearchText::cstring))=sub.fp";
 
         public RDKitExactSearchService(string connectionString)

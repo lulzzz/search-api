@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using MoreLinq;
 using SearchV2.Abstractions;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> where TData : IWithReference<TId>
+    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData>, ITextSearch<TData> where TData : IWithReference<TId>
     {
         readonly MongoClient _client;
         readonly IMongoCollection<TData> _mols;
@@ -15,7 +16,7 @@ namespace SearchV2.MongoDB
         readonly FilterDefinitionBuilder<TData> _filterBuilder = Builders<TData>.Filter;
         readonly string _idPropName;
 
-        public MongoCatalog(string connectionString, string dbName, string idPropName, IFilterCreator<TFilterQuery, TData> filterCreator)
+        public MongoCatalog(string connectionString, string dbName, string idPropName, string[] textIndexFields, IFilterCreator<TFilterQuery, TData> filterCreator)
         {
             _idPropName = idPropName;
 
@@ -25,11 +26,33 @@ namespace SearchV2.MongoDB
             var db = _client.GetDatabase(dbName);
             _mols = db.GetCollection<TData>("mols");
 
+            var index = _mols.Indexes.List().ToList().Where(bd => bd["key"].ToBsonDocument().Contains("_fts")).SingleOrDefault();
+
+            if (index == null || !textIndexFields.All(item => index["weights"].ToBsonDocument().Contains(item != idPropName ? item : "_id")))
+            {
+                if (index != null)
+                {
+                    _mols.Indexes.DropOne(index["name"].ToString());
+                }
+
+                var indexKeys = Builders<TData>.IndexKeys;
+                IndexKeysDefinition<TData> indexKey = null;
+
+                foreach (var f in textIndexFields)
+                {
+                    indexKey = (indexKey?.Text(f)) ?? indexKeys.Text(f);
+                }
+
+                if (indexKey != null)
+                {
+                    _mols.Indexes.CreateOne(indexKey);
+                }
+            }
+
             _filterCreator = filterCreator;
         }
         
         #region ICatalogDb
-
         async Task ICatalogDb<TId, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
         {
             foreach (var batch in items.Batch(10000))
@@ -42,7 +65,7 @@ namespace SearchV2.MongoDB
         {
             foreach (var batch in ids.Batch(10000))
             {
-                await _mols.DeleteManyAsync(_filterBuilder.In(i => i.Ref, ids));
+                await _mols.DeleteManyAsync(_filterBuilder.In(_idPropName, ids));
             }
         }
 
@@ -66,7 +89,18 @@ namespace SearchV2.MongoDB
 
         async Task<TData> ICatalogDb<TId, TFilterQuery, TData>.OneAsync(TId id)
         {
-            return (await _mols.FindAsync(_filterBuilder.Eq(_idPropName, id))).First();
+            return (await _mols.FindAsync(_filterBuilder.Eq(_idPropName, id))).FirstOrDefault();
+        }
+        #endregion
+
+        #region ITextSearch
+        async Task<IEnumerable<TData>> ITextSearch<TData>.FindText(string text)
+        {
+            var find = _mols.Find(_filterBuilder.Text(text)).Limit(100);
+            var findBson = find.ToBsonDocument();
+            var res = await find.ToListAsync();
+            return res;
+            //await _mols.Find(_filterBuilder.Text(text)).Limit(100).ToListAsync();
         }
         #endregion
     }
