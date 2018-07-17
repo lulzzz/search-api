@@ -1,8 +1,6 @@
 ﻿using SearchV2.Abstractions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SearchV2.Generics
@@ -15,6 +13,7 @@ namespace SearchV2.Generics
         }
     }
 
+#warning this class ensures no consistency on inserts and deletes
     class ReindexingCatalogDb<TFilterQuery, TData> : ICatalogDb<string, TFilterQuery, TData> where TData : ISearchIndexItem
     {
         readonly ICatalogDb<string, TFilterQuery, TData> _innerCatalog;
@@ -25,18 +24,18 @@ namespace SearchV2.Generics
             _innerCatalog = innerCatalog;
             _searchIndex = searchIndex;
         }
-
-        async Task ICatalogDb<string, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
-        {
-            await _searchIndex.Add(items.Cast<ISearchIndexItem>());
-            await _innerCatalog.AddAsync(items);
-        }
-
-        async Task ICatalogDb<string, TFilterQuery, TData>.DeleteAsync(IEnumerable<string> ids)
-        {
-            await _searchIndex.Remove(ids);
-            await _innerCatalog.DeleteAsync(ids);
-        }
+        
+        Task ICatalogDb<string, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
+            => Task.WhenAll(
+                _searchIndex.Add(items.Cast<ISearchIndexItem>()),
+                _innerCatalog.AddAsync(items)
+            );
+        
+        Task ICatalogDb<string, TFilterQuery, TData>.DeleteAsync(IEnumerable<string> ids)
+            => Task.WhenAll(
+                _searchIndex.Remove(ids),
+                _innerCatalog.DeleteAsync(ids)
+            );
 
         Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetAsync(IEnumerable<string> ids) => _innerCatalog.GetAsync(ids);
 

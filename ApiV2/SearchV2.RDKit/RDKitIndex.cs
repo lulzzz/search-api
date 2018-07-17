@@ -28,10 +28,10 @@ namespace SearchV2.RDKit
 
             await WithConnection(string.Format(connectionStringPreformatted, "postgres"), async c =>
             {
-                dbExists = await c.ExecuteCommandScalar("SELECT 1 FROM pg_database WHERE datname='temp'") != null;
+                dbExists = await c.ExecuteCommandScalar("SELECT 1 FROM pg_database WHERE datname='postgres'") != null;
                 if (!dbExists)
                 {
-                    await c.ExecuteCommandNonQuery("CREATE DATABASE {dbName}");
+                    await c.ExecuteCommandNonQuery($"CREATE DATABASE {dbName}");
                 }
             });
 
@@ -67,7 +67,7 @@ namespace SearchV2.RDKit
                             {
                                 parameters.Add(new NpgsqlParameter($"@v{counter}", item.Ref));
                                 parameters.Add(new NpgsqlParameter($"@v{counter + 1}", item.Smiles));
-                                cmdText.Append($"(@v{counter}, @{counter + 1}),");
+                                cmdText.Append($"(@v{counter}, @v{counter + 1}),");
                                 counter += 2;
                             }
                             cmdText.Remove(cmdText.Length - 1, 1).Append(';');
@@ -76,7 +76,7 @@ namespace SearchV2.RDKit
                         await t.ExecuteCommandNonQuery(
 @"INSERT INTO mr (ref, smiles, mol, fp) 
 SELECT ref, smiles, mol, morganbv_fp(mol) fp 
-FROM (SELECT ref, smiles, mol_from_smiles(smiles::cstring) mol FROM mols_temp)
+FROM (SELECT ref, smiles, mol_from_smiles(smiles::cstring) mol FROM mols_temp) as mols_with_mol
 ON CONFLICT DO NOTHING");
                     })
             );

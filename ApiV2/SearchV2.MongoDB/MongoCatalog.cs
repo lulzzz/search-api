@@ -15,9 +15,9 @@ namespace SearchV2.MongoDB
         readonly FilterDefinitionBuilder<TData> _filterBuilder = Builders<TData>.Filter;
         readonly string _idPropName;
 
-        public MongoCatalog(string connectionString, string dbName, IFilterCreator<TFilterQuery, TData> filterCreator)
+        public MongoCatalog(string connectionString, string dbName, string idPropName, IFilterCreator<TFilterQuery, TData> filterCreator)
         {
-            _idPropName = nameof(IWithReference<TId>.Ref);
+            _idPropName = idPropName;
 
             Init.ForType<TData>(_idPropName);
 
