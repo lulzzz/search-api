@@ -10,8 +10,8 @@ namespace SearchV2.RDKit
 {
     class RDKitSimilaritySearchService : ISearchComponent<RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
     {
-        private string _connectionString;
-        private int _hitLimit;
+        readonly string _connectionString;
+        readonly int _hitLimit;
 
         public RDKitSimilaritySearchService(string connectionString, int hitLimit)
         {

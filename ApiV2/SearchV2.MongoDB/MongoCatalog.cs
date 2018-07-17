@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using MoreLinq;
 using SearchV2.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,9 +27,25 @@ namespace SearchV2.MongoDB
 
             _filterCreator = filterCreator;
         }
-
-
+        
         #region ICatalogDb
+
+        async Task ICatalogDb<TId, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
+        {
+            foreach (var batch in items.Batch(10000))
+            {
+                await _mols.BulkWriteAsync(batch.Select(i => new InsertOneModel<TData>(i)));
+            }
+        }
+
+        async Task ICatalogDb<TId, TFilterQuery, TData>.DeleteAsync(IEnumerable<TId> ids)
+        {
+            foreach (var batch in ids.Batch(10000))
+            {
+                await _mols.DeleteManyAsync(_filterBuilder.In(i => i.Ref, ids));
+            }
+        }
+
         async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
         {
             var filter = _filterBuilder.In(_idPropName, ids);

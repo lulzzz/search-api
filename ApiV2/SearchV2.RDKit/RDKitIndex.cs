@@ -18,6 +18,8 @@ namespace SearchV2.RDKit
             _connectionString = connectionString;
         }
 
+        public static string CreateConnectionString(string address, string dbName) => $"User ID=postgres;Host={address};Port=5432;Database={dbName};Pooling=true;";
+
         public static async Task<ISearchIndex> OpenOrInit(string address, string dbName)
         {
             var connectionStringPreformatted = $"User ID=postgres;Host={address};Port=5432;Database={{0}};Pooling=true;";
@@ -50,7 +52,7 @@ namespace SearchV2.RDKit
         }
 
 
-        Task ISearchIndex.Add(IEnumerable<SearchIndexItem> items)
+        Task ISearchIndex.Add(IEnumerable<ISearchIndexItem> items)
             => WithConnection(_connectionString, c
                 => c.RunTransactionAndCommit(async t
                     =>

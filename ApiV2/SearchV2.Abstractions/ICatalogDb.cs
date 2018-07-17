@@ -8,5 +8,8 @@ namespace SearchV2.Abstractions
         Task<IEnumerable<TData>> GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters);
         Task<IEnumerable<TData>> GetAsync(IEnumerable<TId> ids);
         Task<TData> OneAsync(TId id);
+
+        Task AddAsync(IEnumerable<TData> items);
+        Task DeleteAsync(IEnumerable<TId> ids);
     }
 }
