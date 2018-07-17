@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> where TData : IWithReference<TId>
+    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData> where TData : IWithReference<TId>
     {
         readonly MongoClient _client;
         readonly IMongoCollection<TData> _mols;

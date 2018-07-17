@@ -14,9 +14,9 @@ namespace SearchV2.Generics
         where TFilterQuery : IFilterQuery
     {
         readonly ICatalogDb<TId, TFilterQuery, TData> _catalog;
-        readonly ISearchComponent<TId, TSearchQuery, TSearchResult> _search;
+        readonly ISearchComponent<TSearchQuery, TSearchResult> _search;
 
-        internal CompositeSearchService(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchComponent<TId, TSearchQuery, TSearchResult> search)
+        internal CompositeSearchService(ICatalogDb<TId, TFilterQuery, TData> catalog, ISearchComponent<TSearchQuery, TSearchResult> search)
         {
             _catalog = catalog;
             _search = search;
@@ -155,7 +155,7 @@ namespace SearchV2.Generics
     {
         public static ISearchService<TSearchQuery, TFilterQuery> Compose<TId, TSearchQuery, TFilterQuery, TSearchResult, TData>(
             ICatalogDb<TId, TFilterQuery, TData> catalog, 
-            ISearchComponent<TId, TSearchQuery, TSearchResult> search
+            ISearchComponent<TSearchQuery, TSearchResult> search
         )
             where TData : IWithReference<TId>
             where TSearchResult : IWithReference<TId>

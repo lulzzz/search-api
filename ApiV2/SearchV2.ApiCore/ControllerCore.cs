@@ -113,8 +113,7 @@ namespace SearchV2.ApiCore
             =>
                 m == HttpMethod.Get ? typeof(HttpGetAttribute)
               : m == HttpMethod.Post ? typeof(HttpPostAttribute)
-              : Exception<Type>();
-
-        static T Exception<T>(string message = null) where T : class => throw new NotImplementedException(message);
+              : m == HttpMethod.Delete ? typeof(HttpDeleteAttribute)
+              : throw new NotImplementedException();
     }
 }

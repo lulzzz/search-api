@@ -8,7 +8,7 @@ using System.Data;
 
 namespace SearchV2.RDKit
 {
-    class RDKitSimilaritySearchService : ISearchComponent<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
+    class RDKitSimilaritySearchService : ISearchComponent<RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>
     {
         private string _connectionString;
         private int _hitLimit;
@@ -20,16 +20,16 @@ namespace SearchV2.RDKit
         }
 
         readonly static string selectFromClause = $"DECLARE search_cur CURSOR FOR " +
-            $"SELECT {nameof(Mr)}.{nameof(Mr.Ref)}, tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), ms.fp) AS {nameof(RDKitSimilaritySearchResult.Similarity)} " +
-            $"FROM {nameof(Mr)} JOIN {nameof(Ms)} ON {nameof(Mr)}.{nameof(Mr.Id)}={nameof(Ms)}.{nameof(Ms.Id)} " +
-            "WHERE morganbv_fp(mol_from_smiles(@SearchText::cstring))%ms.fp ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>ms.fp " +
+            $"SELECT {nameof(Mr.Ref)}, tanimoto_sml(morganbv_fp(mol_from_smiles(@SearchText::cstring)), fp) AS {nameof(RDKitSimilaritySearchResult.Similarity)} " +
+            $"FROM {nameof(Mr)} " +
+            "WHERE morganbv_fp(mol_from_smiles(@SearchText::cstring))%fp ORDER BY morganbv_fp(mol_from_smiles(@SearchText::cstring))<%>fp " +
             "LIMIT {0}";
 
         const string fetchLimitedQuery = "FETCH {0} FROM search_cur";
 
         const string setThresholdQuery = "SET rdkit.tanimoto_threshold={0}";
 
-        async Task<ISearchResult<RDKitSimilaritySearchResult>> ISearchComponent<string, RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>.FindAsync(RDKitSimilaritySearchRequest query, int fastFetchCount)
+        async Task<ISearchResult<RDKitSimilaritySearchResult>> ISearchComponent<RDKitSimilaritySearchRequest, RDKitSimilaritySearchResult>.FindAsync(RDKitSimilaritySearchRequest query, int fastFetchCount)
         {
             var con = new NpgsqlConnection(_connectionString);
             con.Open();

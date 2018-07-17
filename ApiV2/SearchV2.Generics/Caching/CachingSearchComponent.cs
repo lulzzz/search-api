@@ -9,24 +9,21 @@ namespace SearchV2.Generics
 {
     public static class CachingSearchComponent
     {
-        public static ISearchComponent<TId, TSearchQuery, TSearchResult> Wrap<TId, TSearchQuery, TSearchResult>(this ISearchComponent<TId, TSearchQuery, TSearchResult> service, int maxCount)
-            where TSearchResult : IWithReference<TId>
+        public static ISearchComponent<TSearchQuery, TSearchResult> Wrap<TSearchQuery, TSearchResult>(this ISearchComponent<TSearchQuery, TSearchResult> service, int maxCount)
             where TSearchQuery : ICacheKey
         {
-            return new CachingSearchService<TId, TSearchQuery, TSearchResult>(service, maxCount);
+            return new CachingSearchService<TSearchQuery, TSearchResult>(service, maxCount);
         }
 
-        public static ISearchComponent<TId, string, TSearchResult> Wrap<TId, TSearchResult>(this ISearchComponent<TId, string, TSearchResult> service, int maxCount)
-            where TSearchResult : IWithReference<TId>
+        public static ISearchComponent<string, TSearchResult> Wrap<TSearchResult>(this ISearchComponent<string, TSearchResult> service, int maxCount)
         {
-            return new CachingSearchService<TId, string, TSearchResult>(service, maxCount);
+            return new CachingSearchService<string, TSearchResult>(service, maxCount);
         }
     }
 
-    class CachingSearchService<TId, TSearchQuery, TSearchResult> : ISearchComponent<TId, TSearchQuery, TSearchResult> 
-        where TSearchResult : IWithReference<TId>
+    class CachingSearchService<TSearchQuery, TSearchResult> : ISearchComponent<TSearchQuery, TSearchResult>
     {
-        readonly ISearchComponent<TId, TSearchQuery, TSearchResult> _service;
+        readonly ISearchComponent<TSearchQuery, TSearchResult> _service;
         readonly int _maxCount;
 
         readonly Func<TSearchQuery, string> _getStringKey;
@@ -34,7 +31,7 @@ namespace SearchV2.Generics
         readonly Dictionary<string, (ISearchResult<TSearchResult> data, DateTime lastRequestDate)> _cache = new Dictionary<string, (ISearchResult<TSearchResult>, DateTime)>();
         readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        public CachingSearchService(ISearchComponent<TId, TSearchQuery, TSearchResult> service, int maxCount)
+        public CachingSearchService(ISearchComponent<TSearchQuery, TSearchResult> service, int maxCount)
         {
             if(typeof(TSearchQuery).GetInterface(nameof(ICacheKey)) != null)
             {
@@ -52,7 +49,7 @@ namespace SearchV2.Generics
             _maxCount = maxCount;
         }
 
-        async Task<ISearchResult<TSearchResult>> ISearchComponent<TId, TSearchQuery, TSearchResult>.FindAsync(TSearchQuery query, int fastFetchCount)
+        async Task<ISearchResult<TSearchResult>> ISearchComponent<TSearchQuery, TSearchResult>.FindAsync(TSearchQuery query, int fastFetchCount)
         {
             try
             {

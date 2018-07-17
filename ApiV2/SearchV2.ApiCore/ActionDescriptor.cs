@@ -17,6 +17,8 @@ namespace SearchV2.ApiCore
 
         public static ActionDescriptor Post<TIn, TOut>(string route, Func<TIn, TOut> action) => Make(route, HttpMethod.Post, action);
 
+        public static ActionDescriptor Delete<TIn, TOut>(string route, Func<TIn, TOut> action) => Make(route, HttpMethod.Delete, action);
+
         //public static ActionDescriptor Make<TIn, TOut>(string route, HttpMethod httpMethod, Func<TIn, TOut> action) => Make(route, httpMethod, action);
         public static ActionDescriptor Make(string route, HttpMethod httpMethod, MulticastDelegate action)
             => new ActionDescriptor { HttpMethod = httpMethod, Route = route, Implementation = action };

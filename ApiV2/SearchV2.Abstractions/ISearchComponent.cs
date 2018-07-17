@@ -2,7 +2,7 @@
 
 namespace SearchV2.Abstractions
 {
-    public interface ISearchComponent<TId, TSearchQuery, TSearchResult> where TSearchResult : IWithReference<TId>
+    public interface ISearchComponent<TSearchQuery, TSearchResult>
     {
         Task<ISearchResult<TSearchResult>> FindAsync(TSearchQuery query, int fastFetchCount);
     }

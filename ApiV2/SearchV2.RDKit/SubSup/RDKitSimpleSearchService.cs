@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.RDKit
 {
-    class RDKitSimpleSearchService : ISearchComponent<string, string, RDKitSimpleSearchResult>
+    class RDKitSimpleSearchService : ISearchComponent<string, RDKitSimpleSearchResult>
     {
         readonly string _connectionString;
         readonly int _hitLimit;
@@ -16,7 +16,7 @@ namespace SearchV2.RDKit
 
         readonly static string selectFromClause = $"DECLARE search_cur CURSOR FOR " +
             $"SELECT {nameof(Mr)}.{nameof(Mr.Ref)} " +
-            $"FROM {nameof(Mr)} JOIN {nameof(Ms)} ON {nameof(Mr)}.{nameof(Mr.Id)}={nameof(Ms)}.{nameof(Ms.Id)} " +
+            $"FROM {nameof(Mr)} " +
             "WHERE {0} " +
             "LIMIT {1}";
 
@@ -30,7 +30,7 @@ namespace SearchV2.RDKit
             _whereOrderBy = whereOrderBy;
         }
 
-        async Task<ISearchResult<RDKitSimpleSearchResult>> ISearchComponent<string, string, RDKitSimpleSearchResult>.FindAsync(string query, int fastFetchCount)
+        async Task<ISearchResult<RDKitSimpleSearchResult>> ISearchComponent<string, RDKitSimpleSearchResult>.FindAsync(string query, int fastFetchCount)
         {
             var con = new NpgsqlConnection(_connectionString);
             con.Open();
