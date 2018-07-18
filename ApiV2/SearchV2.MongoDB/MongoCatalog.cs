@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData>
+    internal sealed class MongoCatalog<TFilterQuery, TData> : ICatalogDb<string, TFilterQuery, TData>
     {
         readonly IMongoCollection<TData> _mols;
         readonly IFilterCreator<TFilterQuery, TData> _filterCreator;
@@ -25,7 +25,7 @@ namespace SearchV2.MongoDB
         }
         
         #region ICatalogDb
-        async Task ICatalogDb<TId, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
+        async Task ICatalogDb<string, TFilterQuery, TData>.AddAsync(IEnumerable<TData> items)
         {
             foreach (var batch in items.Batch(10000))
             {
@@ -33,7 +33,7 @@ namespace SearchV2.MongoDB
             }
         }
 
-        async Task ICatalogDb<TId, TFilterQuery, TData>.DeleteAsync(IEnumerable<TId> ids)
+        async Task ICatalogDb<string, TFilterQuery, TData>.DeleteAsync(IEnumerable<string> ids)
         {
             foreach (var batch in ids.Batch(10000))
             {
@@ -41,14 +41,14 @@ namespace SearchV2.MongoDB
             }
         }
 
-        async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetAsync(IEnumerable<TId> ids)
+        async Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetAsync(IEnumerable<string> ids)
         {
             var filter = _filterBuilder.In(_idPropName, ids);
             var res = await (await _mols.FindAsync(filter)).ToListAsync();
             return res;
         }
 
-        async Task<IEnumerable<TData>> ICatalogDb<TId, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters)
+        async Task<IEnumerable<TData>> ICatalogDb<string, TFilterQuery, TData>.GetFilteredAsync(IEnumerable<string> ids, TFilterQuery filters)
         {
             var filter = _filterBuilder.In(_idPropName, ids);
             if (filters != null)
@@ -59,7 +59,7 @@ namespace SearchV2.MongoDB
             return res;
         }
 
-        async Task<TData> ICatalogDb<TId, TFilterQuery, TData>.OneAsync(TId id)
+        async Task<TData> ICatalogDb<string, TFilterQuery, TData>.OneAsync(string id)
         {
             return (await _mols.FindAsync(_filterBuilder.Eq(_idPropName, id))).FirstOrDefault();
         }

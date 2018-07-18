@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public sealed class MongoTextSearch<TData> : ITextSearch<TData>
+    internal sealed class MongoTextSearch<TData> : ITextSearch<TData>
     {
         readonly IMongoCollection<TData> _mols;
         readonly FilterDefinitionBuilder<TData> _filterBuilder = Builders<TData>.Filter;
