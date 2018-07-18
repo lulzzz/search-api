@@ -18,11 +18,17 @@ namespace SearchV2.RDKit
             _connectionString = connectionString;
         }
 
-        public static string CreateConnectionString(string address, string dbName) => $"User ID=postgres;Host={address};Port=5432;Database={dbName};Pooling=true;";
+        public static string CreateConnectionString(string address, string dbName, string password) => $"User ID=postgres;Password={password};Host={address};Port=5432;Database={dbName};Pooling=true;";
 
-        public static async Task<ISearchIndex> OpenOrInit(string address, string dbName)
+        public static string CreateConnectionString(IPostgresConnectionInfo i) => CreateConnectionString(i.PostgresHost, i.PostgresDbName, i.PostgresPassword);
+
+        public static async Task<ISearchIndex> OpenOrInit(IPostgresConnectionInfo i)
         {
-            var connectionStringPreformatted = $"User ID=postgres;Host={address};Port=5432;Database={{0}};Pooling=true;";
+            var address = i.PostgresHost;
+            var password = i.PostgresPassword;
+            var dbName = i.PostgresDbName;
+
+            var connectionStringPreformatted = CreateConnectionString(address, "{0}", password);
 
             var dbExists = false;
 
