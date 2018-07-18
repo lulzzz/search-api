@@ -1,5 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using MoreLinq;
 using SearchV2.Abstractions;
 using System.Collections.Generic;
@@ -8,46 +7,19 @@ using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB
 {
-    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData>, ITextSearch<TData> where TData : IWithReference<TId>
+    public sealed class MongoCatalog<TId, TFilterQuery, TData> : ICatalogDb<TId, TFilterQuery, TData>
     {
-        readonly MongoClient _client;
         readonly IMongoCollection<TData> _mols;
         readonly IFilterCreator<TFilterQuery, TData> _filterCreator;
         readonly FilterDefinitionBuilder<TData> _filterBuilder = Builders<TData>.Filter;
         readonly string _idPropName;
 
-        public MongoCatalog(string connectionString, string dbName, string idPropName, string[] textIndexFields, IFilterCreator<TFilterQuery, TData> filterCreator)
+        public MongoCatalog(MongoConnector<TData> connector, IFilterCreator<TFilterQuery, TData> filterCreator)
         {
-            _idPropName = idPropName;
+            _idPropName = connector.IdProdName;
+            _mols = connector.Mols;
 
             Init.ForType<TData>(_idPropName);
-
-            _client = new MongoClient(connectionString);
-            var db = _client.GetDatabase(dbName);
-            _mols = db.GetCollection<TData>("mols");
-
-            var index = _mols.Indexes.List().ToList().Where(bd => bd["key"].ToBsonDocument().Contains("_fts")).SingleOrDefault();
-
-            if (index == null || !textIndexFields.All(item => index["weights"].ToBsonDocument().Contains(item != idPropName ? item : "_id")))
-            {
-                if (index != null)
-                {
-                    _mols.Indexes.DropOne(index["name"].ToString());
-                }
-
-                var indexKeys = Builders<TData>.IndexKeys;
-                IndexKeysDefinition<TData> indexKey = null;
-
-                foreach (var f in textIndexFields)
-                {
-                    indexKey = (indexKey?.Text(f)) ?? indexKeys.Text(f);
-                }
-
-                if (indexKey != null)
-                {
-                    _mols.Indexes.CreateOne(indexKey);
-                }
-            }
 
             _filterCreator = filterCreator;
         }
@@ -92,16 +64,6 @@ namespace SearchV2.MongoDB
             return (await _mols.FindAsync(_filterBuilder.Eq(_idPropName, id))).FirstOrDefault();
         }
         #endregion
-
-        #region ITextSearch
-        async Task<IEnumerable<TData>> ITextSearch<TData>.FindText(string text)
-        {
-            var find = _mols.Find(_filterBuilder.Text(text)).Limit(100);
-            var findBson = find.ToBsonDocument();
-            var res = await find.ToListAsync();
-            return res;
-            //await _mols.Find(_filterBuilder.Text(text)).Limit(100).ToListAsync();
-        }
-        #endregion
+        
     }
 }

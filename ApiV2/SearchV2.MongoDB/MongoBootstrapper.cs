@@ -5,7 +5,6 @@ using MoreLinq;
 using SearchV2.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace SearchV2.MongoDB

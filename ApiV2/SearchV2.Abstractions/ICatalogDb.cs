@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Abstractions
 {
-    public interface ICatalogDb<TId, TFilterQuery, TData> where TData : IWithReference<TId>
+    public interface ICatalogDb<TId, TFilterQuery, TData>
     {
         Task<IEnumerable<TData>> GetFilteredAsync(IEnumerable<TId> ids, TFilterQuery filters);
         Task<IEnumerable<TData>> GetAsync(IEnumerable<TId> ids);
