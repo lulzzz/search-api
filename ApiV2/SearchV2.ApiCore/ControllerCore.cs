@@ -52,6 +52,11 @@ namespace SearchV2.ApiCore
                     new CustomAttributeBuilder(
                         action.HttpMethod.MapToAttribute().GetConstructors().Single(c => c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(string)),
                         new object[] { action.Route }));
+
+                foreach (var item in action.Attributes)
+                {
+                    actionBuilder.SetCustomAttribute(item);
+                }
                 
                 var aIL = actionBuilder.GetILGenerator();
                 
