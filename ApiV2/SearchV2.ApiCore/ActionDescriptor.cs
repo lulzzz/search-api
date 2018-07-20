@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,20 @@ namespace SearchV2.ApiCore
         {
             var attrs = d.Attributes as List<CustomAttributeBuilder>;
             attrs.Add(new CustomAttributeBuilder(typeof(AuthorizeAttribute).GetConstructor(new Type[] { typeof(string) }), new object[] { policy }));
+            return d;
+        }
+
+        static readonly Type _tResponseCacheAttribute = typeof(ResponseCacheAttribute);
+
+        public static ActionDescriptor DontCache(this ActionDescriptor d)
+        {
+            var attrs = d.Attributes as List<CustomAttributeBuilder>;
+            attrs.Add(
+                new CustomAttributeBuilder(
+                    _tResponseCacheAttribute.GetConstructor(new Type[] { }), 
+                    new object[] { }, 
+                    new[] { _tResponseCacheAttribute.GetProperty(nameof(ResponseCacheAttribute.NoStore)), _tResponseCacheAttribute.GetProperty(nameof(ResponseCacheAttribute.Duration)) },
+                    new object[] { true, 0 }));
             return d;
         }
     }
