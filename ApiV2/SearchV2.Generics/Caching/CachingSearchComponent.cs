@@ -7,21 +7,30 @@ using System.Threading.Tasks;
 
 namespace SearchV2.Generics
 {
+    public interface ICachingSearchComponent
+    {
+        Task InvalidateAsync();
+    }
+
+    public interface ICachingSearchComponent<TSearchQuery, TSearchResult> : ISearchComponent<TSearchQuery, TSearchResult>, ICachingSearchComponent
+    {
+    }
+
     public static class CachingSearchComponent
     {
-        public static ISearchComponent<TSearchQuery, TSearchResult> Wrap<TSearchQuery, TSearchResult>(this ISearchComponent<TSearchQuery, TSearchResult> service, int maxCount)
+        public static ICachingSearchComponent<TSearchQuery, TSearchResult> Wrap<TSearchQuery, TSearchResult>(this ISearchComponent<TSearchQuery, TSearchResult> service, int maxCount)
             where TSearchQuery : ICacheKey
         {
             return new CachingSearchService<TSearchQuery, TSearchResult>(service, maxCount);
         }
 
-        public static ISearchComponent<string, TSearchResult> Wrap<TSearchResult>(this ISearchComponent<string, TSearchResult> service, int maxCount)
+        public static ICachingSearchComponent<string, TSearchResult> Wrap<TSearchResult>(this ISearchComponent<string, TSearchResult> service, int maxCount)
         {
             return new CachingSearchService<string, TSearchResult>(service, maxCount);
         }
     }
 
-    class CachingSearchService<TSearchQuery, TSearchResult> : ISearchComponent<TSearchQuery, TSearchResult>
+    class CachingSearchService<TSearchQuery, TSearchResult> : ICachingSearchComponent<TSearchQuery, TSearchResult>
     {
         readonly ISearchComponent<TSearchQuery, TSearchResult> _service;
         readonly int _maxCount;
@@ -33,7 +42,7 @@ namespace SearchV2.Generics
 
         public CachingSearchService(ISearchComponent<TSearchQuery, TSearchResult> service, int maxCount)
         {
-            if(typeof(TSearchQuery).GetInterface(nameof(ICacheKey)) != null)
+            if (typeof(TSearchQuery).GetInterface(nameof(ICacheKey)) != null)
             {
                 _getStringKey = v => ((ICacheKey)v).ToStringKey();
             }
@@ -55,7 +64,7 @@ namespace SearchV2.Generics
             {
                 await _semaphore.WaitAsync();
                 var key = _getStringKey(query);
-                
+
                 if (_cache.TryGetValue(key, out var cacheItem))
                 {
                     var result = cacheItem.data;
@@ -93,6 +102,19 @@ namespace SearchV2.Generics
                         _semaphore.Release();
                     }
                 }).Status;
+            }
+        }
+
+        async Task ICachingSearchComponent.InvalidateAsync()
+        {
+            try
+            {
+                await _semaphore.WaitAsync();
+                _cache.Clear();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }

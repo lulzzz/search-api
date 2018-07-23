@@ -1,4 +1,5 @@
 ﻿using SearchV2.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,13 +8,13 @@ namespace SearchV2.Generics
 {
     public static class ReindexingCatalogDb
     {
+        [Obsolete("this class ensures no consistency on inserts and deletes")]
         public static ICatalogDb<string, TFilterQuery, TData> NotifyIndexOnChanges<TFilterQuery, TData>(this ICatalogDb<string, TFilterQuery, TData> catalog, ISearchIndex searchIndex) where TData : ISearchIndexItem
         {
             return new ReindexingCatalogDb<TFilterQuery, TData>(catalog, searchIndex);
         }
     }
-
-#warning this class ensures no consistency on inserts and deletes
+    
     class ReindexingCatalogDb<TFilterQuery, TData> : ICatalogDb<string, TFilterQuery, TData> where TData : ISearchIndexItem
     {
         readonly ICatalogDb<string, TFilterQuery, TData> _innerCatalog;
