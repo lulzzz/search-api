@@ -1,168 +1,110 @@
 ﻿using SearchV2.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SearchV2.Generics
 {
     public class AsyncResult<T> : ISearchResult<T>, IAsyncOperation where T : class
     {
-        volatile Task _runningTask;
-        readonly List<T> loaded = new List<T>();
-        readonly object _syncObj = new object();
+        volatile Task _runningTaskUnsafe;
+        readonly List<T> _loadedUnsafe = new List<T>();
+
+        readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         readonly TaskCompletionSource<int> _tsc = new TaskCompletionSource<int>();
 
-        public delegate void UpdateStateDelegate(Task newTask, IEnumerable<T> loadedBatch);
+        public delegate Task UpdateStateDelegate(Task newTask, IEnumerable<T> loadedBatch);
 
-        void UpdateState(Task runningTask, IEnumerable<T> newItems)
+        async Task RunInMutex(Action<List<T>, Task> a)
         {
-            lock (_syncObj)
+            await _semaphore.WaitAsync();
+            try
             {
-                _runningTask = runningTask;
-                loaded.AddRange(newItems);
-                if (runningTask == null)
-                {
-                    _tsc.SetResult(loaded.Count);
-                }
+                a(_loadedUnsafe, _runningTaskUnsafe);
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
+        async Task RunInMutex(Func<List<T>, Task, Task> a)
+        {
+            await _semaphore.WaitAsync();
+            try
+            {
+                await a(_loadedUnsafe, _runningTaskUnsafe).ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        Task UpdateState(Task newRunningTask, IEnumerable<T> newItems)
+        => RunInMutex((loaded, runningTask) =>
+            {
+                _runningTaskUnsafe = newRunningTask; // the only place where _runningTaskUnsafe is set
+                loaded.AddRange(newItems);
+                if (newRunningTask == null)
+                {
+                    _tsc.SetResult(loaded.Count);
+                }
+            });
+
         public AsyncResult(Func<UpdateStateDelegate, Task> loader)
         {
-            _runningTask = loader(UpdateState);
+            _runningTaskUnsafe = loader(UpdateState);
         }
 
         #region ISearchResult<MadfastResultItem>.ForEachAsync
         async Task ISearchResult<T>.ForEachAsync(Func<T, Task<bool>> body)
         {
-            if (_runningTask == null)
+            int counter = 0;
+
+            async Task<int> ProcessLoadedItems(int startFrom)
             {
-                foreach (var item in ReadyResult)
+                T[] buffer = null;
+                await RunInMutex((loaded, runningTask) =>
                 {
-                    var @continue = await body(item);
-                    if (!@continue)
-                    {
-                        return;
-                    }
+                    buffer = new T[loaded.Count - startFrom];
+                    loaded.CopyTo(startFrom, buffer, 0, buffer.Length);
+                });
+                foreach (var item in buffer)
+                {
+                    await body(item);
+                    startFrom++;
                 }
+                return startFrom;
             }
-            else
+
+            while (true)
             {
-                foreach (var itemTask in AsyncResultInternal)
+                counter = await ProcessLoadedItems(counter);
+
+                Task runningTaskLocal = null;
+                await RunInMutex((loaded, runningTask) => { runningTaskLocal = runningTask; });
+                if (runningTaskLocal == null)
                 {
-                    var item = await itemTask;
-                    var @continue = item != null && await body(item);
-                    if (!@continue)
-                    {
-                        return;
-                    }
+                    break;
                 }
+                await runningTaskLocal;
             }
-        }
 
-        IEnumerable<T> ReadyResult
-        {
-            get
-            {
-                lock (_syncObj)
-                {
-                    if (_runningTask == null)
-                    {
-                        return loaded;
-                    }
-                }
-                throw new InvalidOperationException("The result is not ready for synchronous consumption");
-            }
-        }
-
-        Task<T> TryNext(int index, Task runningTask)
-            => runningTask.ContinueWith(t =>
-            {
-                lock (_syncObj)
-                {
-                    if (_runningTask != null && _runningTask.IsFaulted)
-                    {
-                        throw new InvalidOperationException("Loading of results was faulted");
-                    }
-                    return index < loaded.Count
-                        ? loaded[index]
-                        : null;
-                }
-            });
-
-        IEnumerable<Task<T>> AsyncResultInternal
-        {
-            get
-            {
-                int i = 0; // count of returned elements-1
-                T[] ready;
-
-                do
-                {
-                    lock (_syncObj)
-                    {
-                        var len = loaded.Count - i;
-                        ready = new T[len];
-                        loaded.CopyTo(i, ready, 0, len);
-                    }
-
-                    foreach (var item in ready)
-                    {
-                        i++;
-                        yield return Task.FromResult(item);
-                    }
-
-                    Task running = null;
-
-                    lock (_syncObj) // synchronizedCheck to determine if anything new has been loaded
-                    {
-                        if (i == loaded.Count) // if nothing new was loaded, then remember current running task to avoid race
-                        {
-                            running = _runningTask;
-                        }
-                    }
-
-                    if (running != null) // if running task was remembered in the lock, then no ready elements left and we yield awaiting task
-                    {
-                        yield return TryNext(i, running);
-                        i++;
-                        break; // 
-                    }
-                } while (true);
-
-                do
-                {
-                    Task running;
-                    lock (_syncObj)
-                    {
-                        if (_runningTask == null)
-                        {
-                            break;
-                        }
-                        running = _runningTask;
-                    }
-                    yield return TryNext(i, running);
-                    i++;
-                } while (true);
-
-                while (i < loaded.Count)
-                {
-                    yield return Task.FromResult(loaded[i]);
-                    i++;
-                }
-            }
+            counter = await ProcessLoadedItems(counter);
         }
 
         AsyncOperationStatus IAsyncOperation.Status
         {
             get
             {
-                if (_runningTask == null)
+                if (_runningTaskUnsafe == null)
                 {
                     return AsyncOperationStatus.Finished;
                 }
-                if (_runningTask.IsFaulted)
+                if (_runningTaskUnsafe.IsFaulted)
                 {
                     return AsyncOperationStatus.Faulted;
                 }
