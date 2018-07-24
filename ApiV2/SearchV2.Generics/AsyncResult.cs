@@ -13,7 +13,7 @@ namespace SearchV2.Generics
 
         readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        readonly TaskCompletionSource<int> _tsc = new TaskCompletionSource<int>();
+        readonly TaskCompletionSource<int> _countTcs = new TaskCompletionSource<int>();
 
         public delegate Task UpdateStateDelegate(Task newTask, IEnumerable<T> loadedBatch);
 
@@ -30,27 +30,15 @@ namespace SearchV2.Generics
             }
         }
 
-        async Task RunInMutex(Func<List<T>, Task, Task> a)
-        {
-            await _semaphore.WaitAsync();
-            try
-            {
-                await a(_loadedUnsafe, _runningTaskUnsafe).ConfigureAwait(false);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
-
         Task UpdateState(Task newRunningTask, IEnumerable<T> newItems)
-        => RunInMutex((loaded, runningTask) =>
+            => RunInMutex((loaded, runningTask) =>
             {
-                _runningTaskUnsafe = newRunningTask; // the only place where _runningTaskUnsafe is set
                 loaded.AddRange(newItems);
+                Thread.MemoryBarrier(); // ensure items are added before setting _runningTaskUnsafe
+                _runningTaskUnsafe = newRunningTask; // the only place where _runningTaskUnsafe is set
                 if (newRunningTask == null)
                 {
-                    _tsc.SetResult(loaded.Count);
+                    _countTcs.SetResult(loaded.Count);
                 }
             });
 
@@ -62,38 +50,47 @@ namespace SearchV2.Generics
         #region ISearchResult<MadfastResultItem>.ForEachAsync
         async Task ISearchResult<T>.ForEachAsync(Func<T, Task<bool>> body)
         {
-            int counter = 0;
-
-            async Task<int> ProcessLoadedItems(int startFrom)
+            if (_runningTaskUnsafe == null) // this means we can query loaded items directly, no inserts are running at the current time
             {
-                T[] buffer = null;
-                await RunInMutex((loaded, runningTask) =>
-                {
-                    buffer = new T[loaded.Count - startFrom];
-                    loaded.CopyTo(startFrom, buffer, 0, buffer.Length);
-                });
-                foreach (var item in buffer)
+                foreach (var item in _loadedUnsafe)
                 {
                     await body(item);
-                    startFrom++;
                 }
-                return startFrom;
             }
-
-            while (true)
+            else
             {
-                counter = await ProcessLoadedItems(counter);
+                int counter = 0;
 
-                Task runningTaskLocal = null;
-                await RunInMutex((loaded, runningTask) => { runningTaskLocal = runningTask; });
-                if (runningTaskLocal == null)
+                async Task<int> ProcessLoadedItems(int startFrom)
                 {
-                    break;
+                    T[] buffer = null;
+                    await RunInMutex((loaded, runningTask) =>
+                    {
+                        buffer = new T[loaded.Count - startFrom];
+                        loaded.CopyTo(startFrom, buffer, 0, buffer.Length);
+                    });
+                    foreach (var item in buffer)
+                    {
+                        await body(item);
+                        startFrom++;
+                    }
+                    return startFrom;
                 }
-                await runningTaskLocal;
-            }
 
-            counter = await ProcessLoadedItems(counter);
+                while (true)
+                {
+                    counter = await ProcessLoadedItems(counter);
+
+                    var runningTaskLocal = _runningTaskUnsafe; // cache this value locally to avoid race between null check and await
+                    if (runningTaskLocal == null)
+                    {
+                        break;
+                    }
+                    await runningTaskLocal;
+                }
+
+                counter = await ProcessLoadedItems(counter);
+            }
         }
 
         AsyncOperationStatus IAsyncOperation.Status
@@ -112,7 +109,7 @@ namespace SearchV2.Generics
             }
         }
 
-        Task<int> ISearchResult<T>.Count => _tsc.Task;
+        Task<int> ISearchResult<T>.Count => _countTcs.Task;
         #endregion
     }
 }

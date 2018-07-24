@@ -40,7 +40,7 @@ namespace SearchV2.Generics.Tests
         }
 
         [Fact]
-        public async Task Results()
+        public async Task Results_CorrectAmountAreAvailableAndReturned()
         {
             var s1 = new SemaphoreSlim(0, 1);
             var s3 = new SemaphoreSlim(0, 1);
@@ -67,10 +67,6 @@ namespace SearchV2.Generics.Tests
                 {
                     s2.Release();
                 };
-                if (iterationsCount == 10)
-                {
-                    s4.Release();
-                };
                 return Task.FromResult(true);
             });
             Assert.Equal(0, iterationsCount);
@@ -80,9 +76,17 @@ namespace SearchV2.Generics.Tests
             Assert.Equal(5, iterationsCount);
             Assert.Equal(TaskStatus.WaitingForActivation, forEachTask.Status);
             s3.Release();
-            await s4.WaitAsync();
+            await forEachTask;
             Assert.Equal(10, iterationsCount);
-            Assert.Equal(TaskStatus.RanToCompletion, forEachTask.Status);            
+
+            iterationsCount = 0;
+
+            await o.ForEachAsync(_ =>
+            {
+                iterationsCount++;
+                return Task.FromResult(true);
+            });
+            Assert.Equal(10, iterationsCount);
         }
     }
 }
