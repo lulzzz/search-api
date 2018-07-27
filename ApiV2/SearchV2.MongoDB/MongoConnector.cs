@@ -1,5 +1,7 @@
 ﻿using MongoDB.Driver;
 using SearchV2.Abstractions;
+using SearchV2.Generics;
+using System.Linq;
 
 namespace SearchV2.MongoDB
 {
@@ -10,6 +12,21 @@ namespace SearchV2.MongoDB
 
         public static ITextSearch<TData> CreateTextSearch<TData>(this MongoConnector<TData> connector, int hitLimit, params string[] textIndexFields)
             => new MongoTextSearch<TData>(connector, hitLimit, textIndexFields);
+
+        public static Reindexer.DataSourceDelegate CreateReindexerDataSource<TData>(this MongoConnector<TData> connector) where TData : ISearchIndexItemWithTime
+        {
+            var indexKeys = Builders<TData>.IndexKeys;
+            connector.Mols.Indexes.CreateOne(indexKeys.Ascending(nameof(ISearchIndexItemWithTime.LastUpdated)));
+
+            return async (since, skip, maxCount)
+                => (await connector.Mols
+                    .Find(m => m.LastUpdated > since)
+                    .SortBy(m => m.LastUpdated)
+                    .Skip(skip)
+                    .Limit(maxCount)
+                    .ToListAsync())
+                    .Cast<ISearchIndexItemWithTime>();
+        }
     }
 
     public sealed class MongoConnector<TData>

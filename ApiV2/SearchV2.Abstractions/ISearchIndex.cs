@@ -17,6 +17,6 @@ namespace SearchV2.Abstractions
 
     public interface ISearchIndexItem : IWithReference<string>
     {
-        string Smiles { get; set; }
+        string Smiles { get; }
     }
 }

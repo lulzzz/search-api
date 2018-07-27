@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SearchV2.Abstractions\SearchV2.Abstractions.csproj" />
+    <ProjectReference Include="..\SearchV2.Generics\SearchV2.Generics.csproj" />
   </ItemGroup>
 
 </Project>
